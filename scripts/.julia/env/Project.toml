@@ -1,8 +1,0 @@
-name = "env"
-uuid = "1767ba06-eb6d-46bc-9cdc-afb904a6d713"
-authors = ["Enki Barra M <enki.barmel97@ciencias.unam.mx>"]
-version = "0.1.0"
-
-[deps]
-Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
-Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
