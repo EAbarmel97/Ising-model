@@ -51,7 +51,7 @@ function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel)
     elseif i === ising_model.NGRID
         im = ising_model.NGRID - 1 
         ip = 1
-    elseif 1 < i < ising_model.NGRID
+    elseif 1 < i < ising_model.NGRID #if i- coordinate not in boundry 
         ip = i+1
         im = i-1
     end
@@ -62,7 +62,7 @@ function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel)
     elseif j === ising_model.NGRID
         jm = ising_model.NGRID - 1
         jp = 1
-    elseif 1 < j < ising_model.NGRID
+    elseif 1 < j < ising_model.NGRID #if j-coordinate not in boundry 
         jp = j+1
         jm = j-1  
     end
