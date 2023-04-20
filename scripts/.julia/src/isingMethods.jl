@@ -43,28 +43,28 @@ The grid wraps around at the edges (toroidal symmetry).=#
 function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel) :: Float64
     grid_spin = ising_model.grid  
     energy = 0
-    ip, im = 1,1 
-    jp, jm = 1,1
 
     #Toroidal symetry 
     if i === 1 
         im = ising_model.NGRID
+        ip = 2
     elseif i === ising_model.NGRID
-        ip = 1  
+        im = ising_model.NGRID - 1 
+        ip = 1
+    elseif 1 < i < ising_model.NGRID
+        ip = i+1
+        im = i-1
     end
 
     if j === 1 
         jm = ising_model.NGRID
+        jp = 2
     elseif j === ising_model.NGRID
+        jm = ising_model.NGRID - 1
         jp = 1
-    end
-    
-    #Point (i,j) is not on the lattice boundries 
-    if (1 < i < ising_model.NGRID) && (1 < j < ising_model.NGRID)
-        ip = i+1
-        im = i-1
+    elseif 1 < j < ising_model.NGRID
         jp = j+1
-        jm = j-1
+        jm = j-1  
     end
     
     #Energy of cell i,j is determined by the energy of its neighbours 
