@@ -36,8 +36,10 @@ function main()
 
    touch("global_energy.csv")
    global_energy_csv = open("global_energy","w")
-   
-  for run in 1:NUM_RUNS
+
+   file_names = ["magn.csv","global_energy"]
+
+   for run in 1:NUM_RUNS
       isingMethods.reset_stats(ising_model)
       isingMethods.update_energy(ising_model)
       isingMethods.set_magnetization(INIT_MAGN,ising_model)
@@ -47,6 +49,7 @@ function main()
          isingMethods.do_generation(ising_model)
          
          #= TO DO: writing on files magn.csv and global_energy.csv=#
+         println("Recording on file $file_names[i]")
       end   
    end
   
