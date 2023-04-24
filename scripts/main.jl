@@ -32,13 +32,11 @@ function main()
 
    #creation of CSV files that will contain the magnetization and global energy time series, respectively 
    touch("magn.csv")
-   magn_csv = open("magn.csv","w")
-
    touch("global_energy.csv")
-   global_energy_csv = open("global_energy","w")
 
    file_names = ["magn.csv","global_energy"]
-
+   file_name = ""
+   
    for run in 1:NUM_RUNS
       isingMethods.reset_stats(ising_model)
       isingMethods.update_energy(ising_model)
@@ -47,9 +45,14 @@ function main()
 
       for simulation in 1:NUM_SIMULATIONS
          isingMethods.do_generation(ising_model)
+
+         for i in eachindex(file_names)
+            file_name = file_names[i]
+            println("Recording on file $file_name")
+            open(file_name,"wr")
+
+         end
          
-         #= TO DO: writing on files magn.csv and global_energy.csv=#
-         println("Recording on file $file_names[i]")
       end   
    end
   

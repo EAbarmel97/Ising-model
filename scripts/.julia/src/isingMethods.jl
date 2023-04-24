@@ -147,7 +147,7 @@ function try_cell_flip(i :: Int, j :: Int, ising_model ::isingModel)
         else
             prob = exp(-ΔE/ising_model.TEMP) #termal flip 
         end
-    elseif ising_model.trans_dynamics === ising.DYNAMICS_GLAUBER
+    elseif ising_model.trans_dynamics === ising.GLAUBER_DYNAMICS
         #glauber dynamics
         prob = 1/(1 + exp(-ΔE/ising_model.TEMP))   
     end  

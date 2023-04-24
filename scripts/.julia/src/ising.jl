@@ -49,8 +49,7 @@ mutable struct isingModel
         flip_strategy = RANDOM_STRATEGY
         flip_order = Array{Int,1}(undef,NCELLS)
         trans_dynamics = METROPOLIS_DYNAMICS
-        grid = Array{Int,2}(undef,NCELLS,NCELLS)
-        flip_order = Array{Int,1}(undef,NCELLS)
+        grid = Array{Int,2}(undef,NGRID,NGRID)
         cur_gen = 0 
 
         global_energy = 0.0
@@ -58,7 +57,6 @@ mutable struct isingModel
         global_mean = 0.0
         global_variance = 0.0
 
-        println("Ahoj there!")
         return new(TEMP,NGRID,NCELLS,grid,flip_order,flip_strategy,trans_dynamics,cur_gen, 
         global_energy, global_magnetization,global_mean, global_variance)
     end

@@ -1,6 +1,7 @@
 module utilities
 
 export binarysearch, quicksort!,swap!, parse_int_float64
+
 include("../src/ising.jl")
 using .ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
 
@@ -102,5 +103,9 @@ function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
     end
 end
 
+#= Given a csv obtained from simulatin, N of first simulations are discarted=#
+function prune_N_first_simul(arr :: IOBuffer, N ::Int ) :: nothing
+    return nothing
+end
 
 end
