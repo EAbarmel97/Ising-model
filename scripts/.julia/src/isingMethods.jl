@@ -43,8 +43,7 @@ The grid wraps around at the edges (toroidal symmetry).=#
 function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel) :: Float64
     grid_spin = ising_model.grid  
     energy = 0
-
-    #Toroidal symetry 
+    
     if i === 1 
         im = ising_model.NGRID
         ip = 2
@@ -186,11 +185,11 @@ in the set (0,y] i.e is the same as the % operator but with an offset of 1
 =#
 
 #= Given the id that uniquely determines a cell in the spin grid, the function outputs the (i,j) 
-coordinates inside the grid location=#
+coordinates inside the grid location =#
 function get_cell_coords( id :: Int,ising_model :: isingModel) :: Array{Int,1}
     i = mod1(id ,ising_model.NGRID)
     j = cld(id,ising_model.NGRID)
-    return [i,j]
+    return [i,j] 
 end
 
 #=Provided the (x,y) coordinates of a cell gives the id representation of a spin at location (x,y)=#

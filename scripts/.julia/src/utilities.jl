@@ -103,6 +103,7 @@ function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
     end
 end
 
+#= TO DO: implement a funtion that burns out the first N simulations =#
 #= Given a csv obtained from simulatin, N of first simulations are discarted=#
 function prune_N_first_simul(arr :: IOBuffer, N ::Int ) :: nothing
     return nothing
