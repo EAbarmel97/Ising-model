@@ -1,5 +1,5 @@
 module isingMethods
-export display,reset_stats,compute_energy_cell,update_energy,update_magenetization,randomize,set_magnetization,try_cell_flip,get_cell_coords,get_cell_id
+export display,reset_stats,compute_energy_cell,update_energy,update_magnetization,randomize,set_magnetization,try_cell_flip,get_cell_coords,get_cell_id
 export do_generation, choose_flip_strategy, choose_trans_dynamics
 
 include("../src/ising.jl")
@@ -25,6 +25,21 @@ function display(ising_model :: isingModel)
         println()
     end    
 end
+#=  =#
+function diplay(ising_model :: isingModel) :: String
+    
+    str = ""
+    for i in 1:ising_model.NGRID
+        for j in 1:ising_model.NGRID
+            if ising_model.grid[i,j] === 1
+                str*"+"
+            else
+                str*"-"
+            end     
+        end
+        str*"\n" #line break
+    end   
+end
 
 #=Resets statistics=#
 function reset_stats(ising_model :: isingModel)
@@ -40,8 +55,7 @@ end
 
 #=Returns the energy of a cell
 The grid wraps around at the edges (toroidal symmetry).=#
-function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel) :: Float64
-    grid_spin = ising_model.grid  
+function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel) :: Float64 
     energy = 0
     
     if i === 1 
@@ -67,25 +81,25 @@ function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel)
     end
     
     #Energy of cell i,j is determined by the energy of its neighbours 
-    energy += grid_spin[ip,j] + grid_spin[im,j] + grid_spin[i,jp] + grid_spin[i,jm]
-    energy = -grid_spin[i,j]*energy
+    energy += ising_model.grid[ip,j] + ising_model.grid[im,j] + ising_model.grid[i,jp] + ising_model.grid[i,jm]
+    energy = -ising_model.grid[i,j]*energy
     return energy #energy per cell 
 end
 
 #=Computes the enery of the whole grid of spins states=#
 function update_energy(ising_model :: isingModel)
-    g_energy = 0
+    ising_model.global_energy = 0 
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
-            ising_model.global_energy += compute_energy_cell(i,j,ising_model)
-            g_energy = ising_model.global_energy
+            ising_model.global_energy += compute_energy_cell(i,j,ising_model)                
         end
     end
-   setfield!(ising_model, :global_energy,g_energy)
+    g_energy = ising_model.global_energy/ising_model.NCELLS
+   setfield!(ising_model,:global_energy,g_energy)
 end
 
 #=Computes the magnetization of the whole spin grid=#
-function update_magenetization(ising_model :: isingModel)
+function update_magnetization(ising_model :: isingModel)
     g_magnetization = 0
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
@@ -94,7 +108,7 @@ function update_magenetization(ising_model :: isingModel)
         end
     end
 
-    g_magnetization /= ising_model.NGRID
+    g_magnetization /= ising_model.NCELLS
     setfield!(ising_model,:global_magnetization,g_magnetization)
 end
 
@@ -163,17 +177,16 @@ function try_cell_flip(i :: Int, j :: Int, ising_model ::isingModel)
             ising_model.global_magnetization -= 2/ising_model.NCELLS
         else
             ising_model.global_magnetization += 2/ising_model.NCELLS    
-        end 
+        end
 
         ising_model.grid[i,j] *=-1 #cell gets flipped
         spin_grid = ising_model.grid
         setfield!(ising_model,:grid,spin_grid) 
 
-        ising_model.global_energy += ΔE #individual energy changed
+        ising_model.global_energy += ΔE/ising_model.NCELLS #individual energy changed
         g_energy = ising_model.global_energy
-        setfield!(ising_model,:global_energy,g_energy) 
+        setfield!(ising_model,:global_energy,g_energy)
     end     
-
 end
 
 #=
