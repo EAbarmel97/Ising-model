@@ -1,6 +1,6 @@
 module utilities
 
-export binarysearch, quicksort!,swap!, parse_int_float64
+export binarysearch, quicksort!,swap!, parse_int_float64, prune_N_first
 
 include("../src/ising.jl")
 using .ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
@@ -103,12 +103,30 @@ function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
     end
 end
 
-#= Given a csv obtained from simulatin, N of first simulations are discarted=#
-function prune_N_first_simul( file_path :: String, N ::Int ) :: nothing
-    io = IOBuffer()
+#= Given a path to a .txt file containig a time series, N of first simulations are discarted=#
+function prune_N_first(full_path_file :: String, N ::Int)    
+    time_series = [] #array containg the pruned time series
 
-    #= TO DO: implement: use regex to parse an a float64 from the txt file =#
+    file_name = replace(full_path_file,".txt" => "")
+    touch("$(file_name)_pruned_$(N)_first_simulations"*".txt")
+    
+    try
+        file = open(full_path_file,"r")
+        string_array = readlines(file) # vector with all lines
+        for i in 1:eachindex(string_array)
+            if i > N 
+               push!(time_series,parse_int_float64(Float64,string_array[i])) #parsing stringified i-th observation
 
+               new_file = open(file_name,"a+")
+               write(new_file,"$(time_series[i])") #i-th observation of the pruned time series 
+               close(new_file)
+            end 
+        end 
+    catch e
+        isa(e,SystemError)
+        printstyled(stderr,"ERROR: There's no such file with path $(path)", 
+        bold=true, color=:red) #customized error message 
+        println(stderr)
+    end
 end
-
 end

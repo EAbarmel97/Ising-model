@@ -25,20 +25,21 @@ function display(ising_model :: isingModel)
         println()
     end    
 end
-#=  =#
-function diplay(ising_model :: isingModel) :: String
-    
-    str = ""
+
+#= Method with returns a  stringified version of the spin grid=#
+function display(ising_model :: isingModel, generation :: Int ) :: String
+    str = "gen $generation:\n"
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
             if ising_model.grid[i,j] === 1
-                str*"+"
+                str = str*"+"
             else
-                str*"-"
+                str = str*"-"
             end     
         end
-        str*"\n" #line break
-    end   
+        str = str*"\n" #line break
+    end 
+    return str   
 end
 
 #=Resets statistics=#
@@ -86,19 +87,20 @@ function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel)
     return energy #energy per cell 
 end
 
-#=Computes the enery of the whole grid of spins states=#
+#=Computes the  mean energy of the whole grid of spins =#
 function update_energy(ising_model :: isingModel)
-    ising_model.global_energy = 0 
+    g_energy = 0 
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
-            ising_model.global_energy += compute_energy_cell(i,j,ising_model)                
+            ising_model.global_energy += compute_energy_cell(i,j,ising_model)
+            g_energy = ising_model.global_energy                
         end
     end
-    g_energy = ising_model.global_energy/ising_model.NCELLS
-   setfield!(ising_model,:global_energy,g_energy)
+    g_energy /= ising_model.NCELLS 
+    setfield!(ising_model,:global_energy,g_energy)
 end
 
-#=Computes the magnetization of the whole spin grid=#
+#=Computes the mean magnetization of the whole spin grid=#
 function update_magnetization(ising_model :: isingModel)
     g_magnetization = 0
     for i in 1:ising_model.NGRID
@@ -107,7 +109,6 @@ function update_magnetization(ising_model :: isingModel)
             g_magnetization = ising_model.global_magnetization
         end
     end
-
     g_magnetization /= ising_model.NCELLS
     setfield!(ising_model,:global_magnetization,g_magnetization)
 end
