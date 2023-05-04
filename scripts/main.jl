@@ -40,15 +40,18 @@ function main()
    isingMethods.choose_trans_dynamics(ising_model)
 
    cd("scripts") #cd to scripts subdirectory
+
+   mkpath("scripts/simulations") #creates simulation folder  
  
    #= Global energy and magnetization time series realization will be saved on subdirectories over folder simultations=#
    mkpath("simulations/energy")
    mkpath("simulations/magnetization")
 
-   #= Subdirectories containg a .txt file with the unicode representation of how the spin grid evolves with each generation at each run =#
+   #= Subdirectory containg a .txt file with the unicode representation of how the spin grid evolves with each generation at each run =#
    mkpath("simulations/grid_evolution")
    
-   file_names = ["global_energy","global_magnetization"] 
+   file_names = ["global_energy","global_magnetization"]
+   
 
    for run in 1:NUM_RUNS      
       isingMethods.reset_stats(ising_model) 
@@ -58,26 +61,26 @@ function main()
       
       #= Cration of generic .txt files containing energy and magnetization time series =#
       generic_energy_file_name = "simulations/energy/$(file_names[1])_r$(run)"*".txt"
-      touch("$(generic_energy_file_name)")
+      touch("$generic_energy_file_name")
       
       generic_magnetization_file_name = "simulations/magnetization/$(file_names[2])_r$(run)"*".txt"
-      touch("$(generic_magnetization_file_name)") 
+      touch("$generic_magnetization_file_name") 
       
       #= Cration of generic .txt files containing snapshots of the spin grid evolution at each generation =#
       generic_spin_grid_file_name = "simulations/grid_evolution/grid_evolution_r$(run)"*".txt"
-      touch("$(generic_spin_grid_file_name)")
+      touch("$generic_spin_grid_file_name")
 
       #= Initial observations of the global energy and and magnetizaton are saved to their respective .txt files=#
-      generic_energy_file = open(generic_energy_file_name,"a+")
-      write(generic_energy_file_name, "$(ising_model.global_energy)\n")
+      generic_energy_file = open(generic_energy_file_name,"w+")
+      write(generic_energy_file_name, "$(ising_model.global_energy)\n") #initial observation
       close(generic_energy_file)
       
-      generic_magnetization_file = open(generic_magnetization_file_name,"a+")
-      write(generic_energy_file_name, "$(ising_model.global_magnetization)\n")
-      close(generic_energy_file)
+      generic_magnetization_file = open(generic_magnetization_file_name,"w+")
+      write(generic_magnetization_file_name, "$(ising_model.global_magnetization)\n") #initial observation
+      close(generic_magnetization_file)
 
       #= Initial spin grid state =#
-      generic_spin_grid_file = open(generic_spin_grid_file_name,"a+")
+      generic_spin_grid_file = open(generic_spin_grid_file_name,"w+")
       stringified_grid_spin = isingMethods.display(ising_model,ising_model.cur_gen)
       write(generic_spin_grid_file,"$(stringified_grid_spin)\n")
       close(generic_spin_grid_file)
@@ -85,12 +88,11 @@ function main()
       for generation in 1:NUM_GENERATIONS 
          isingMethods.do_generation(ising_model) 
          setfield!(ising_model,:cur_gen, generation)
-
-         #= Writing observation i to the global energy  and magnetization time series=# 
+         #= Writing observation i to the global energy  and magnetization time series =# 
          generic_energy_file = open(generic_energy_file_name,"a+")
-         write(generic_energy_file_name, "$(ising_model.global_energy)\n") #global energy observation at generation i 
+         write(generic_energy_file_name,"$(ising_model.global_energy)\n") #global energy observation at generation i 
          close(generic_energy_file)
-
+         
          generic_magnetization_file = open(generic_magnetization_file_name,"a+")
          write(generic_magnetization_file,"$(ising_model.global_magnetization)\n") #global magnetization at generation i 
          close(generic_magnetization_file)
@@ -99,16 +101,11 @@ function main()
          stringified_grid_spin = isingMethods.display(ising_model,ising_model.cur_gen)
          write(generic_spin_grid_file,"$(stringified_grid_spin)") #spin grid observation at generation i 
          close(generic_spin_grid_file)
-      end      
+      end 
    end
    
    #= TO DO: implement graphs of global energy and global magnetization time series =#
-
+   
 end
 
 main()
-
-
-
-
-

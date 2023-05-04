@@ -89,11 +89,11 @@ end
 
 #=Computes the  mean energy of the whole grid of spins =#
 function update_energy(ising_model :: isingModel)
-    g_energy = 0 
+    g_energy = 0
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
             ising_model.global_energy += compute_energy_cell(i,j,ising_model)
-            g_energy = ising_model.global_energy                
+            g_energy = ising_model.global_energy            
         end
     end
     g_energy /= ising_model.NCELLS 
