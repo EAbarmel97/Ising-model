@@ -148,7 +148,7 @@ function set_magnetization(magn :: Float64, ising_model :: isingModel)
 end
 
 #=Method for trying a flip spin=#
-function try_cell_flip(i :: Int, j :: Int, ising_model ::isingModel)
+function try_cell_flip(i :: Int, j :: Int, ising_model :: isingModel)
     g_energy = 0
     prob = 0
     old_E = compute_energy_cell(i,j,ising_model)
@@ -259,19 +259,26 @@ function choose_flip_strategy(ising_model :: isingModel)
         println()
 
         user_input = readline()
-        user_choice = parse(Int64, user_input)
-        user_choice_key = string(user_choice)
-        
-        if 1 <= user_choice <= 3
-            setfield!(ising_model,:flip_strategy,get(options_to_choose,user_choice_key,nothing))
-            break 
+        try
+            user_choice = parse(Int64, user_input)
+            user_choice_key = string(user_choice)
+
+            #user provides a number in the set {1,2,3}
+            if 1 <= user_choice <= 3
+                setfield!(ising_model,:flip_strategy,get(options_to_choose,user_choice_key,nothing))
+                break 
+            end
+        #unacceptable user input 
+        catch e
+            isa(e,ArgumentError)
+            continue
         end
     end
 end
 
 #=Method for selecting a transition dynamics=#
 function choose_trans_dynamics(ising_model :: isingModel)
-    options_to_choose = Dict("1" => METROPOLIS_DYNAMICS, "2" => ising.GLAUBER_DYNAMICS)
+    options_to_choose = Dict("1" => ising.METROPOLIS_DYNAMICS, "2" => ising.GLAUBER_DYNAMICS)
 
     while true 
         println("Choose a transition dynamics")
@@ -280,15 +287,21 @@ function choose_trans_dynamics(ising_model :: isingModel)
         println()
 
         user_input = readline()
-        user_choice = parse(Int64, user_input)
-        user_choice_key = string(user_choice)
-        
-        if 1 <= user_choice <= 2
-            setfield!(ising_model,:trans_dynamics,get(options_to_choose,user_choice_key,nothing))
-            break 
+        try
+            user_choice = parse(Int64, user_input)
+            user_choice_key = string(user_choice)
+            #user provides a number in the set {1,2}
+            if 1 <= user_choice <= 2
+                setfield!(ising_model,:trans_dynamics,get(options_to_choose,user_choice_key,nothing))
+                break
+            end
+
+        #unacceptable user input 
+        catch e
+            isa(e,ArgumentError)
+            continue 
         end
     end
 end
-
-end 
+end #end of module 
 

@@ -1,9 +1,11 @@
 module utilities
 
-export binarysearch, quicksort!,swap!, parse_int_float64, prune_N_first
+export binarysearch, quicksort!, swap!, parse_int_float64, get_array_from_txt
 
 include("../src/ising.jl")
 using .ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
+
+using Plots
 
 #=Quick Sort =#
 
@@ -102,31 +104,47 @@ function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
         println(stderr) 
     end
 end
-
-#= Given a path to a .txt file containig a time series, N of first simulations are discarted=#
-function prune_N_first(full_path_file :: String, N ::Int)    
-    time_series = [] #array containg the pruned time series
-
-    file_name = replace(full_path_file,".txt" => "")
-    touch("$(file_name)_pruned_$(N)_first_simulations"*".txt")
-    
+#= Function to neglect  the fist N entries from an array =#
+function neglect_N_first_from_array!(arr :: AbstractArray, first_N :: Int ) :: Array{AbstractFloat,1}
     try
-        file = open(full_path_file,"r")
-        string_array = readlines(file) # vector with all lines
-        for i in 1:eachindex(string_array)
-            if i > N 
-               push!(time_series,parse_int_float64(Float64,string_array[i])) #parsing stringified i-th observation
-
-               new_file = open(file_name,"a+")
-               write(new_file,"$(time_series[i])") #i-th observation of the pruned time series 
-               close(new_file)
-            end 
-        end 
+        arr = arr[(first_N + 1) : length(arr)] 
+        return arr 
     catch e
-        isa(e,SystemError)
-        printstyled(stderr,"ERROR: There's no such file with path $(path)", 
+        isa(e,BoundsError)
+        printstyled(stderr,"ERROR: cannot neglect first $(first_N)", 
         bold=true, color=:red) #customized error message 
         println(stderr)
     end
 end
+
+#= Gets an array of strings form a .txt file =#
+function get_str_array(file_path :: AbstractString) :: Array{AbstractString,1}
+    stringified_array = [] 
+    try
+        opened_file = open(file_path,"r+")
+        stringified_array = readlines(opened_file)
+        return stringified_array    
+    catch e
+        isa(e,SystemError)
+        printstyled(stderr,"ERROR: There's no such file with path $(file_path)", 
+        bold=true, color=:red) #customized error message 
+        println(stderr)
+    end
 end
+
+#= Function that gets an array of floats from a .txt file.
+
+NOTE: 
+If the .txt file is not on the same hierarchy its absulute path must be provided =#
+function get_array_from_txt(file_path :: AbstractString, prune_first_N = 0 :: Int) :: Array{AbstractFloat,1}
+    time_series = []
+
+    stringified_array = get_stringified_array(file_path) #attemps to get an array with the lines of the .txt file
+    neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
+    
+    for i in eachindex(stringified_array)
+        push!(time_series,parse_int_float64(Float64,stringified_array[i]))
+    end
+    return time_series  
+end
+end #end of module
