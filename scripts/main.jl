@@ -1,9 +1,9 @@
-include("../scripts/.julia/src/isingMethods.jl")
+include("../scripts/src/isingMethods.jl")
 using .isingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
 using .isingMethods: display,reset_stats,compute_energy_cell,update_energy,update_magnetization,randomize,set_magnetization
 using .isingMethods: get_cell_coords, get_cell_id, do_generation,choose_flip_strategy
 
-include("../scripts/.julia/src/utilities.jl")
+include("../scripts/src/utilities.jl")
 using .utilities: parse_int_float64, get_array_from_txt
 
 println()
@@ -106,4 +106,4 @@ function main()
    end
 end
 
-main()
+main() 
