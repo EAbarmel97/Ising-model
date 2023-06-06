@@ -5,8 +5,6 @@ export binarysearch, quicksort!, swap!, parse_int_float64, get_array_from_txt
 include("../src/ising.jl")
 using .ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
 
-using Plots
-
 #=Quick Sort =#
 
 #helper function for swaping values at diferent index locations returning array
@@ -105,10 +103,9 @@ function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
     end
 end
 #= Function to neglect  the fist N entries from an array =#
-function neglect_N_first_from_array!(arr :: AbstractArray, first_N :: Int ) :: Array{AbstractFloat,1}
+function neglect_N_first_from_array!(arr :: AbstractArray, first_N :: Int )
     try
         arr = arr[(first_N + 1) : length(arr)] 
-        return arr 
     catch e
         isa(e,BoundsError)
         printstyled(stderr,"ERROR: cannot neglect first $(first_N)", 

@@ -28,8 +28,6 @@ function do_model(INIT_MAGN, TEMP,N_GRID)
    isingMethods.choose_flip_strategy(ising_model)
    isingMethods.choose_trans_dynamics(ising_model)
 
-   cd("scripts") #cd to scripts subdirectory
-
    str_temp = replace("$(TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
 
    aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
