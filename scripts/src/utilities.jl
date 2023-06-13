@@ -136,7 +136,7 @@ If the .txt file is not on the same hierarchy its absulute path must be provided
 function get_array_from_txt(file_path :: AbstractString, prune_first_N = 0 :: Int) :: Array{AbstractFloat,1}
     time_series = []
 
-    stringified_array = get_stringified_array(file_path) #attemps to get an array with the lines of the .txt file
+    stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file
     neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
     
     for i in eachindex(stringified_array)
