@@ -137,11 +137,11 @@ function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int)::Ar
     time_series = []
 
     stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file
-    neglect_N_first_from_array!(stringified_array, prune_first_N) #attemps prunning first N elements from array 
-
+    neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
     for i in eachindex(stringified_array)
         push!(time_series, parse_int_float64(Float64, stringified_array[i]))
     end
+
     return time_series
 end
 end #end of module
