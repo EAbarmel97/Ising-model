@@ -1,3 +1,4 @@
 **/src/Manifest.toml 
 **/src/Project.toml
 .julenv
+all_simulations

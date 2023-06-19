@@ -22,6 +22,9 @@ const NUM_GENERATIONS = utilities.parse_int_float64(Int,readline())
 println()
 
 function do_model(INIT_MAGN, TEMP,N_GRID)
+   cd("../all_simulations") #going up in the working directory
+   curr_dir = pwd()
+   println("the function uses the $(curr_dir) as working dir")
    ising_model = isingMethods.isingModel(TEMP,N_GRID) #ising model struct instantiation
    
    #= User chooses flip strategy and transition dynamics =#
@@ -29,8 +32,8 @@ function do_model(INIT_MAGN, TEMP,N_GRID)
    isingMethods.choose_trans_dynamics(ising_model)
 
    str_temp = replace("$(TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
-
-   aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
+   #= aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp  =#
+   aux_dir = "simulations_T_" * str_temp #folder containing simulations al temp str_temp 
 
    mkpath(aux_dir) #creates simulation folder  
  
@@ -99,6 +102,8 @@ function main()
       N_GRID = utilities.parse_int_float64(Int,readline())
 
       do_model(INIT_MAGN,TEMP,N_GRID) #model evolution simulation at 
+
+      println()
 
       sleep(3) #sleeps 3 seconds after completing model simultaion at the i-th temperature 
    end

@@ -163,7 +163,7 @@ function try_cell_flip(i :: Int, j :: Int, ising_model :: isingModel)
         end
     elseif ising_model.trans_dynamics === ising.GLAUBER_DYNAMICS
         #glauber dynamics
-        prob = 1/(1 + exp(-ΔE/ising_model.TEMP))   
+        prob = 1/(1 + exp(ΔE/ising_model.TEMP))   
     end  
     
     if rand() <= prob
