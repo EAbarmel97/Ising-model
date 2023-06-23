@@ -8,9 +8,9 @@ cd("..") #change current directory
 curr_dir = pwd()
 
 file_dir_template1 = curr_dir * "/all_simulations/simulations_T_1"
-file_dir_template2 =  curr_dir * "/all_simulations/simulations_T_2"
+file_dir_template2 = curr_dir * "/all_simulations/simulations_T_2"
 file_dir_Tc = curr_dir * "/all_simulations/simulations_T_2_269185314213020/magnetizaton/global_magnetization_r1.txt"
-file_dir_template3 = curr_dir *  "/all_simulations/simulations_T_3"
+file_dir_template3 = curr_dir * "/all_simulations/simulations_T_3"
 
 for i in 0:9 #for temperatures in the interval 1.0-1.9 
     aux_dir = file_dir_template1 * "_$(i)" * "/magnetization/global_magnetization_r1.txt"
@@ -41,3 +41,4 @@ for i in 0:5 #for temperatures in the interval 3.0-3.5
         graphTrazes.save_traze(aux_graph_name, aux_dir)
     end
 end
+
