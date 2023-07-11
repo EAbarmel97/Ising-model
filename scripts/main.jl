@@ -21,6 +21,9 @@ const NUM_GENERATIONS = utilities.parse_int_float64(Int, readline())
 
 println()
 
+println("provide a grid size")
+const N_GRID = utilities.parse_int_float64(Int, readline())
+
 function do_model(INIT_MAGN, TEMP, N_GRID)
    cd("../all_simulations") #going up in the working directory
    curr_dir = pwd()
@@ -96,9 +99,6 @@ function main()
       TEMP = utilities.parse_int_float64(Float64, readline())
 
       println()
-
-      println("provide a grid size")
-      N_GRID = utilities.parse_int_float64(Int, readline())
 
       do_model(INIT_MAGN, TEMP, N_GRID) #model evolution simulation at 
 

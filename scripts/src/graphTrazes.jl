@@ -2,23 +2,13 @@ module graphTrazes
 export save_traze
 
 include("utilities.jl")
-using .utilities: get_array_from_txt
+using .utilities: get_array_from_txt, mean_value
 
 using Plots
 
-#= Function to get the mean value of a given time series=#
-function mean_val(file_path::AbstractString)::Float64
-    sum = 0
-    time_series = utilities.get_array_from_txt(file_path)
-    for i in eachindex(time_series)
-        sum += time_series[i]
-    end
-    return sum /= length(time_series)
-end
-
 #= Function to save the traces of the time series contained in .txt files =#
 function save_traze(dir_to_save::AbstractString, file_path::AbstractString)
-    mean = mean_val(file_path)
+    mean = utilities.mean_value(file_path)
     time_series = utilities.get_array_from_txt(file_path)
     x = collect(0:(length(time_series)-1))
     y = time_series

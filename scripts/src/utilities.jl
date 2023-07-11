@@ -1,6 +1,6 @@
 module utilities
 
-export binarysearch, quicksort!, swap!, parse_int_float64, get_array_from_txt
+export binarysearch, quicksort!, swap!, parse_int_float64, get_array_from_txt, mean_value
 
 include("../src/ising.jl")
 using .ising: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
@@ -143,5 +143,15 @@ function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int)::Ar
     end
 
     return time_series
+end
+
+#= Function to get the arithmetic mean value of a given time series=#
+function mean_value(file_path::AbstractString,prune_first_N=0::Int)::Float64
+    sum = 0
+    time_series = get_array_from_txt(file_path,prune_first_N)
+    for i in eachindex(time_series)
+        sum += time_series[i]
+    end
+    return sum /= length(time_series)
 end
 end #end of module

@@ -9,6 +9,8 @@ using .utilities: parse_int_float64, get_array_from_txt
 using Random
 Random.seed!(1234)
 
+println("Provide initial and final temperatures. Ti < Tf")
+
 println()
 
 println("Initial temperature:")
@@ -26,6 +28,9 @@ const NUM_RUNS = utilities.parse_int_float64(Int, readline())
 
 println()
 
+println("Number of temperatures")
+const NUM_TEMPS = utilities.parse_int_float64(Int, readline())
+
 println("Grid size")
 const N_GRID = utilities.parse_int_float64(Int, readline())
 
@@ -36,14 +41,15 @@ const NUM_GENERATIONS = utilities.parse_int_float64(Int, readline())
 
 
 function do_model(INIT_MAGN, TEMP, N_GRID)
-   cd("../all_simulations") #going up in the working directory
+   cd("../all_simulations/automated") #going up in the working directory
    curr_dir = pwd()
    ising_model = isingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
 
    ising_model.flip_strategy = isingMethods.RANDOM_STRATEGY
    ising_model.trans_dynamics = isingMethods.METROPOLIS_DYNAMICS
-
+   #= TO DO: to round temperatiures to at most 2 decimal places =#
    str_temp = replace("$(TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
+
    #= aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp  =#
    aux_dir = "simulations_T_" * str_temp #folder containing simulations al temp str_temp 
 
@@ -100,12 +106,13 @@ end
 
 function main()
    for i in 0:NUM_TEMPS
-      #random initial temperature 
+      #= random initial temperature on the interval [-1 ,1] =#
       RAND_MAGN = rand()*2 - 1 
       
+      #= temperature increments in arithmetic porgression  =#
       temp = INIT_TEMP + (i/NUM_TEMP)*(FINAL_TEMP - INIT_TEMP)
 
-      do_model(RAND_MAGN, temp, N_GRID)
+      do_model(RAND_MAGN, temp, N_GRID) 
 
       sleep(3) #sleeps 3 seconds after completing model simultaion at the i-th temperature 
    end
