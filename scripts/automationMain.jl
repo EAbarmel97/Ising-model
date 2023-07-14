@@ -47,10 +47,9 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
 
    ising_model.flip_strategy = isingMethods.RANDOM_STRATEGY
    ising_model.trans_dynamics = isingMethods.METROPOLIS_DYNAMICS
-   #= TO DO: to round temperatiures to at most 2 decimal places =#
-   str_temp = replace("$(TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
-
-   #= aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp  =#
+   
+   ROUNDED_TEMP = round(TEMP, digits=2)
+   str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
    aux_dir = "simulations_T_" * str_temp #folder containing simulations al temp str_temp 
 
    mkpath(aux_dir) #creates simulation folder  
@@ -69,11 +68,11 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
       isingMethods.update_magnetization(ising_model) #updates global magnetization 
       isingMethods.update_energy(ising_model) #updates global energy
 
-      #= Cration of generic .txt files containing global magnetization time series =#
+      #= Creation of generic .txt files containing global magnetization time series =#
       generic_magnetization_file_name = global_magnetization_aux_dir * "/global_magnetization_r$(run)" * ".txt"
       touch("$generic_magnetization_file_name")
 
-      #= Cration of generic .txt files containing snapshots of the spin grid evolution at each generation =#
+      #= Creation of generic .txt files containing snapshots of the spin grid evolution at each generation =#
       generic_spin_grid_file_name = grid_evolution_aux_dir * "/grid_evolution_r$(run)" * ".txt"
       touch("$generic_spin_grid_file_name")
 
@@ -114,7 +113,7 @@ function main()
 
       do_model(RAND_MAGN, temp, N_GRID) 
 
-      sleep(3) #sleeps 3 seconds after completing model simultaion at the i-th temperature 
+      sleep(3)
    end
 end
 

@@ -8,20 +8,20 @@ using .utilities: parse_int_float64, get_array_from_txt
 
 println()
 
-println("provide the number of different temperature to simulate")
+println("Number of different temperature to simulate")
 const NUM_TEMPS = utilities.parse_int_float64(Int, readline())
 
-println("provide the number of runs")
+println("Number of runs")
 const NUM_RUNS = utilities.parse_int_float64(Int, readline())
 
 println()
 
-println("provide the number of generations")
+println("Number of generations")
 const NUM_GENERATIONS = utilities.parse_int_float64(Int, readline())
 
 println()
 
-println("provide a grid size")
+println("Grid size")
 const N_GRID = utilities.parse_int_float64(Int, readline())
 
 function do_model(INIT_MAGN, TEMP, N_GRID)
@@ -33,7 +33,12 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
    isingMethods.choose_flip_strategy(ising_model)
    isingMethods.choose_trans_dynamics(ising_model)
 
-   str_temp = replace("$(TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
+   if TEMP == isingMethods.CRITICAL_TEMP
+      str_temp = replace("$(TEMP)", "2.269185314213020" => "Tc") 
+   else
+      str_temp = replace("$(TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
+   end       
+
    #= aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp  =#
    aux_dir = "simulations_T_" * str_temp #folder containing simulations al temp str_temp 
 
@@ -53,11 +58,11 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
       isingMethods.update_magnetization(ising_model) #updates global magnetization 
       isingMethods.update_energy(ising_model) #updates global energy
 
-      #= Cration of generic .txt files containing global magnetization time series =#
+      #= Creation of generic .txt files containing global magnetization time series =#
       generic_magnetization_file_name = global_magnetization_aux_dir * "/global_magnetization_r$(run)" * ".txt"
       touch("$generic_magnetization_file_name")
 
-      #= Cration of generic .txt files containing snapshots of the spin grid evolution at each generation =#
+      #= Creation of generic .txt files containing snapshots of the spin grid evolution at each generation =#
       generic_spin_grid_file_name = grid_evolution_aux_dir * "/grid_evolution_r$(run)" * ".txt"
       touch("$generic_spin_grid_file_name")
 
@@ -90,22 +95,19 @@ end
 
 function main()
    for i in 1:NUM_TEMPS
-      println("provide an initial magnetization")
+      println("Initial magnetization")
       INIT_MAGN = utilities.parse_int_float64(Float64, readline())
 
       println()
 
-      println("provide an initial temperature")
+      println("Initial temperature")
       TEMP = utilities.parse_int_float64(Float64, readline())
 
       println()
 
-      do_model(INIT_MAGN, TEMP, N_GRID) #model evolution simulation at 
+      do_model(INIT_MAGN, TEMP, N_GRID)
 
-      println()
-
-      sleep(3) #sleeps 3 seconds after completing model simultaion at the i-th temperature 
-   end
+      sleep(3)
 end
 
 main()

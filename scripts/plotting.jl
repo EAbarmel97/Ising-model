@@ -1,44 +1,31 @@
 #= Automation of global magnetization time series plot file saving at temperatures ranging from 1.0 to 3.5=#
 include("../scripts/src/graphTrazes.jl")
-using .graphTrazes: save_traze
+using .graphTrazes: save_traze, graph_and_write_over_file
 
-cd("..") #change current directory
+#= file manipulations =#
+cd("..")
+touch("mean_magn.txt")
+curr_dir = pwd()
+file_to_write_over = curr_dir * "/mean_magn.txt"
+
+#writing headers over file
+file = open("mean_magn.txt","w+")
+write(file,"temp,mean_val")
+close(file)
 
 #auxiliary file directory definitions
 curr_dir = pwd()
+all_simuls = curr_dir * "/all_simulations/"
+simuls_dir_names = readdir(all_simuls)
 
-file_dir_template1 = curr_dir * "/all_simulations/simulations_T_1"
-file_dir_template2 = curr_dir * "/all_simulations/simulations_T_2"
-file_dir_Tc = curr_dir * "/all_simulations/simulations_T_2_269185314213020/magnetizaton/global_magnetization_r1.txt"
-file_dir_template3 = curr_dir * "/all_simulations/simulations_T_3"
+#= regex'es =# 
+rgx1 = r"T_1.\d{1}"
+rgx2 = r"T_2.\d{1}"
+rgx3 = r"T_Tc"
+rgx4 = r"T_3.\d{1}"
 
-for i in 0:9 #for temperatures in the interval 1.0-1.9 
-    aux_dir = file_dir_template1 * "_$(i)" * "/magnetization/global_magnetization_r1.txt"
-    aux_graph_name = curr_dir * "/graphs/magn_ts_T_1_$(i).pdf"
-    if isfile(aux_dir)
-        graphTrazes.save_traze(aux_graph_name, aux_dir)
-    end
-end
-
-for i in 0:9 #for temperatures in the interval 2.0-2.9
-    aux_dir = file_dir_template2 * "_$i" * "/magnetization/global_magnetization_r1.txt"
-    aux_graph_name = curr_dir * "/graphs/magn_ts_T_1_$(i).pdf"
-    if isfile(aux_dir)
-        graphTrazes.save_traze(aux_graph_name, aux_dir)
-    end
-end
-
-#at critical temperature
-if isfile(file_dir_Tc)
-    graph_dir = curr_dir * "/graphs/magn_ts_Tc.pdf"
-    graphTrazes.save_traze(graph_dir, file_dir_Tc)
-end
-
-for i in 0:5 #for temperatures in the interval 3.0-3.5
-    aux_dir = file_dir_template3 * "_$(i)" * "/magnetization/global_magnetization_r1.txt"
-    aux_graph_name = curr_dir * "/graphs/magn_ts_T_1_$(i).pdf"
-    if isfile(aux_dir)
-        graphTrazes.save_traze(aux_graph_name, aux_dir)
-    end
-end
-
+#= plotting each temperature group and appending it over the file mean_magn.txt =#
+graphTrazes.graph_and_write_over_file(automated_simuls_dir_names,file_to_write_over,rgx1)
+graphTrazes.graph_and_write_over_file(automated_simuls_dir_names,file_to_write_over,rgx2)
+graphTrazes.graph_and_write_over_file(automated_simuls_dir_names,file_to_write_over,rgx3)
+graphTrazes.graph_and_write_over_file(automated_simuls_dir_names,file_to_write_over,rgx4)
