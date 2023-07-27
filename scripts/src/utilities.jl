@@ -14,6 +14,20 @@ function swap!(val1::Int, val2::Int, obj::Union{Array{Float64,1},Array{Int,1}})
     setindex!(obj, obj[val2], val2)
 end
 
+#= Function to parse an int of float64 at once=#
+function parse_int_float64(tp::Union{Type{Float64},Type{Int}},
+    parsing_string::String)::Union{Float64,Int}
+    try
+        parsed_result = Base.parse(tp, parsing_string)
+        return parsed_result
+    catch e
+        isa(e, ArgumentError)
+        printstyled(stderr, "ERROR: imposible to parse a type $tp from '$parsing_string'",
+            bold=true, color=:red) #customized error message 
+        println(stderr)
+    end
+end
+
 #= Function to neglect  the fist N entries from an array =#
 function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)
     try

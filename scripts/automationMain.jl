@@ -14,12 +14,12 @@ println("Provide initial and final temperatures. Ti < Tf")
 println()
 
 println("Initial temperature:")
-const INIT_TEMP = utilities.parse_int_float64(Int, readline())
+const INIT_TEMP = utilities.parse_int_float64(Float64, readline())
 
 println()
 
 println("Final temperature:")
-const FINAL_TEMP = utilities.parse_int_float64(Int, readline())
+const FINAL_TEMP = utilities.parse_int_float64(Float64, readline())
 
 println()
 
@@ -31,6 +31,8 @@ println()
 println("Number of temperatures")
 const NUM_TEMPS = utilities.parse_int_float64(Int, readline())
 
+println()
+
 println("Grid size")
 const N_GRID = utilities.parse_int_float64(Int, readline())
 
@@ -39,10 +41,11 @@ println()
 println("Number of generations:")
 const NUM_GENERATIONS = utilities.parse_int_float64(Int, readline())
 
+cd("all_simulations/automated") #going up in the working directory
 
 function do_model(INIT_MAGN, TEMP, N_GRID)
-   cd("../all_simulations/automated") #going up in the working directory
    curr_dir = pwd()
+   println("saving simulations under dir: $curr_dir")
    ising_model = isingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
 
    ising_model.flip_strategy = isingMethods.RANDOM_STRATEGY
@@ -50,7 +53,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
    
    ROUNDED_TEMP = round(TEMP, digits=2)
    str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
-   aux_dir = "simulations_T_" * str_temp #folder containing simulations al temp str_temp 
+   aux_dir =  curr_dir * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
 
    mkpath(aux_dir) #creates simulation folder  
 
@@ -84,7 +87,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
       #= Initial spin grid state =#
       generic_spin_grid_file = open(generic_spin_grid_file_name, "w+")
       stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-      write(generic_spin_grid_file, "$(stringified_grid_spin)\n")
+      write(generic_spin_grid_file, "$(stringified_grid_spin)")
       close(generic_spin_grid_file)
 
       for generation in 1:NUM_GENERATIONS
@@ -97,7 +100,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
 
          generic_spin_grid_file = open(generic_spin_grid_file_name, "a+")
          stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-         write(generic_spin_grid_file, "$(stringified_grid_spin)") #spin grid observation at generation i 
+         write(generic_spin_grid_file, "$(stringified_grid_spin)\n") #spin grid observation at generation i 
          close(generic_spin_grid_file)
       end
    end
@@ -109,7 +112,7 @@ function main()
       RAND_MAGN = rand()*2 - 1 
       
       #= temperature increments in arithmetic porgression  =#
-      temp = INIT_TEMP + (i/NUM_TEMP)*(FINAL_TEMP - INIT_TEMP)
+      temp = INIT_TEMP + (i/NUM_TEMPS)*(FINAL_TEMP - INIT_TEMP)
 
       do_model(RAND_MAGN, temp, N_GRID) 
 

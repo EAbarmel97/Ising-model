@@ -4,7 +4,7 @@ using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, u
 using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 
 include("../scripts/src/utilities.jl")
-using .utilities: parse_int_float64, get_array_from_txt
+using .utilities: parse_int_float64, get_array_from_txt, parse_int_float64
 
 println()
 
@@ -24,9 +24,11 @@ println()
 println("Grid size")
 const N_GRID = utilities.parse_int_float64(Int, readline())
 
+cd("all_simulations") #going up in the working directory
+
 function do_model(INIT_MAGN, TEMP, N_GRID)
-   cd("../all_simulations") #going up in the working directory
    curr_dir = pwd()
+   println("saving simulations under dir: $curr_dir")
    ising_model = isingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
 
    #= User chooses flip strategy and transition dynamics =#
@@ -40,7 +42,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
    end       
 
    #= aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp  =#
-   aux_dir = "simulations_T_" * str_temp #folder containing simulations al temp str_temp 
+   aux_dir = curr_dir * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
 
    mkpath(aux_dir) #creates simulation folder  
 
@@ -74,7 +76,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
       #= Initial spin grid state =#
       generic_spin_grid_file = open(generic_spin_grid_file_name, "w+")
       stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-      write(generic_spin_grid_file, "$(stringified_grid_spin)\n")
+      write(generic_spin_grid_file, "$(stringified_grid_spin)")
       close(generic_spin_grid_file)
 
       for generation in 1:NUM_GENERATIONS
@@ -87,7 +89,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
 
          generic_spin_grid_file = open(generic_spin_grid_file_name, "a+")
          stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-         write(generic_spin_grid_file, "$(stringified_grid_spin)") #spin grid observation at generation i 
+         write(generic_spin_grid_file, "$(stringified_grid_spin)\n") #spin grid observation at generation i 
          close(generic_spin_grid_file)
       end
    end
@@ -109,6 +111,6 @@ function main()
 
       sleep(3)
    end   
-end
+end 
 
 main()
