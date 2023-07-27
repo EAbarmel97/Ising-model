@@ -47,7 +47,7 @@ function graph_and_write_over_file!(dir_names :: Array{AbstractString,1}, file_t
         aux_temp = replace(filtered_array[i], "simulations_T_" => "T.") #getting the temperature
         str_to_append = "$(aux_temp)," * str_mean_val 
         mean_vals_file = open(file_to_write, "a+")
-        write(mean_vals_file, str_to str_to_append) 
+        write(mean_vals_file, str_to_append) 
         close(mean_vals_file)
         
         aux_graph_file_name = replace(filtered_array[i],".txt" => ".pdf")

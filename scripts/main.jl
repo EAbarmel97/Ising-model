@@ -108,6 +108,7 @@ function main()
       do_model(INIT_MAGN, TEMP, N_GRID)
 
       sleep(3)
+   end   
 end
 
 main()
