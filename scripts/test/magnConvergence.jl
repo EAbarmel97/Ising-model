@@ -3,7 +3,7 @@ critical temperature =#
 
 using Test 
 
-include("../scripts/src/utilities.jl")
+include("../src/utilities.jl")
 using utilities: get_array_from_txt
 
 
