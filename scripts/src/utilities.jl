@@ -41,7 +41,7 @@ function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)
 end
 
 #= Gets an array of strings form a .txt file =#
-function get_str_array(file_path::AbstractString)::Array{AbstractString,1}
+function get_str_array(file_path::AbstractString):: Array{String,1}
     stringified_array = []
     try
         opened_file = open(file_path, "r+")
@@ -59,7 +59,7 @@ end
 
 NOTE: 
 If the .txt file is not on the same hierarchy its absulute path must be provided =#
-function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int)::Array{AbstractFloat,1}
+function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int):: Array{Float64,1}
     time_series = []
 
     stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file

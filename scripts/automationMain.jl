@@ -43,9 +43,10 @@ const NUM_GENERATIONS = utilities.parse_int_float64(Int, readline())
 
 cd("all_simulations/automated") #going up in the working directory
 
+const CURR_DIR = pwd()
+println("saving simulations under dir: $CURR_DIR")
+
 function do_model(INIT_MAGN, TEMP, N_GRID)
-   curr_dir = pwd()
-   println("saving simulations under dir: $curr_dir")
    ising_model = isingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
 
    ising_model.flip_strategy = isingMethods.RANDOM_STRATEGY
@@ -53,7 +54,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
    
    ROUNDED_TEMP = round(TEMP, digits=2)
    str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
-   aux_dir =  curr_dir * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
+   aux_dir =  CURR_DIR * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
 
    mkpath(aux_dir) #creates simulation folder  
 
