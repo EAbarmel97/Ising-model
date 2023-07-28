@@ -221,6 +221,7 @@ function do_generation(ising_model :: isingModel)
             try_cell_flip(i,j,ising_model) 
         end
     #all cells are granted to be flipped at least once (Fisher-Yates algorithm)
+    #= TO DO: debug method =#
     elseif ising_model.flip_strategy === ising.SHUFFLE_STRATEGY
         ising_model.flip_order = 1:(ising_model.NGRID*ising_model.NGRID)
         fliping_order = ising_model.flip_order
