@@ -1,18 +1,13 @@
 module graphTrazes
-export save_traze, PlottingException, graph_and_write_over_file!
+export save_traze, PlottingException, graph_and_write_over_file!, plot_mean_magn
 
 using Plots
 
 include("utilities.jl")
-using .utilities: get_array_from_txt, mean_value
+using .utilities: get_array_from_txt, mean_value, neglect_N_first_from_array!
 
-#= Custom exception to be prompted to the user =#
-mutable struct PlottingException <: Exception
-    msg::String
-end
-
-#showerror fucntion override
-Base.showerror(io :: IO, e :: PlottingException) = print(io, "$(e.msg)")
+include("exceptions.jl")
+using .exceptions: PlottingException
 
 #= Function to save the traces of the time series contained in .txt files =#
 function save_traze(dir_to_save::AbstractString, file_path::AbstractString)
@@ -39,7 +34,7 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
     filtered_array = filter(str -> contains(str, rgx), dir_names)
     
     if isempty(filtered_array)
-        throw(PlottingException("impossible to graph the given array of temperatures!"))
+        throw(exceptions.PlottingException("impossible to graph the given array of temperatures!"))
     end     
     
     for i in eachindex(filtered_array)
@@ -62,5 +57,37 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
             save_traze(aux_graph_name, aux_dir)
         end
     end  
+end
+
+#= method to plot custom csv file containing mean magn at its corresponding temp =#
+function plot_mean_magn(file_dir :: AbstractString, dir_to_save :: AbstractString)
+    temps = []
+    mean_magns = []
+    # preprocesing custom csv file 
+    mean_magn_file = open(file_dir, "r+")
+    arr_str = readlines(mean_magn_file) 
+    neglect_N_first_from_array!(arr_str,1) #discarting the headers
+    println(arr_str)
+
+    for i in eachindex(arr_str)
+        substr_temp_and_mean_magn_arr = split(arr_str[i],",")
+        stringified_temp = string(substr_temp_and_mean_magn_arr[1])
+        stringified_mean_magn = string(substr_temp_and_mean_magn_arr[2])
+        temp = utilities.parse_int_float64(Float64,stringified_temp) 
+        mean_magn = utilities.parse_int_float64(Float64,stringified_mean_magn)
+        push!(temps,temp)
+        push!(mean_magns, mean_magn)
+    end
+
+    if isfile(file_dir)
+        plt = plot(temps, mean_magns)
+        ylims!(0.0, 1.0)
+        xlims!(0,3.5)
+        xlabel!("temp")
+        ylabel!("mean_magn")
+        savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory 
+    end 
+
+    close(mean_magn_file)
 end
 end #end of modules

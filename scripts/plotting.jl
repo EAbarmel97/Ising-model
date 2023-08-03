@@ -23,7 +23,7 @@ write(file,"temp,mean_val\n")
 close(file)
 
 #= plotting each temperature group and appending it over the file mean_magn.txt =#
-#graphTrazes.graph_and_write_over_file!(SIMULS_DIR_NAMES,ALL_SIMULS,file_to_write_over,rgx1)
+graphTrazes.graph_and_write_over_file!(SIMULS_DIR_NAMES,ALL_SIMULS,file_to_write_over,rgx1)
 graphTrazes.graph_and_write_over_file!(SIMULS_DIR_NAMES,ALL_SIMULS,file_to_write_over,rgx2)
-#graphTrazes.graph_and_write_over_file!(SIMULS_DIR_NAMES,ALL_SIMULS,file_to_write_over,rgx3)
-#graphTrazes.graph_and_write_over_file!(SIMULS_DIR_NAMES,ALL_SIMULS,file_to_write_over,rgx4)
+graphTrazes.graph_and_write_over_file!(SIMULS_DIR_NAMES,ALL_SIMULS,file_to_write_over,rgx3)
+graphTrazes.graph_and_write_over_file!(SIMULS_DIR_NAMES,ALL_SIMULS,file_to_write_over,rgx4)

@@ -6,8 +6,20 @@ using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_st
 include("../scripts/src/utilities.jl")
 using .utilities: parse_int_float64, get_array_from_txt
 
+include("../scripts/src/exceptions.jl")
+using .exceptions: IlegalChoiceException
+
 using Random
 Random.seed!(1234)
+
+const SIMULS_DIR = "all_simulations"
+const AUTOMATED_SIMULS_DIR = SIMULS_DIR * "/automated"
+
+if !isdir(SIMULS_DIR)
+   mkpath(SIMULS_DIR)
+   cd(SIMULS_DIR)
+   mkpath(AUTOMATED_SIMULS_DIR)
+end
 
 println("Provide initial and final temperatures. Ti < Tf")
 
@@ -21,6 +33,10 @@ println()
 println("Final temperature:")
 const FINAL_TEMP = utilities.parse_int_float64(Float64, readline())
 
+if FINAL_TEMP < INIT_TEMP 
+   throw(exceptions.IlegalChoiceException("Ilegal  choice. Tf < Ti"))   
+end
+
 println()
 
 println("Number of runs:")
@@ -28,8 +44,11 @@ const NUM_RUNS = utilities.parse_int_float64(Int, readline())
 
 println()
 
-println("Number of temperatures")
-const NUM_TEMPS = utilities.parse_int_float64(Int, readline())
+println("Increment: ")
+const INCREMENT = utilities.parse_int_float64(Float64, readline())
+
+#= number of different temperatures equaly spaced by given incrments, contained in the interval [Ti, Tf] =#
+const NUM_TEMPS = (FINAL_TEMP - INIT_TEMP)/INCREMENT 
 
 println()
 

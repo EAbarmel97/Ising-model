@@ -6,6 +6,12 @@ using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_st
 include("../scripts/src/utilities.jl")
 using .utilities: parse_int_float64, get_array_from_txt, parse_int_float64
 
+const SIMULS_DIR = "all_simulations"
+
+if !isdir(SIMULS_DIR)
+   mkpath(SIMULS_DIR)
+end
+
 println()
 
 println("Number of different temperature to simulate")
