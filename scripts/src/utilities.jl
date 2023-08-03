@@ -15,8 +15,8 @@ function swap!(val1::Int, val2::Int, obj::Union{Array{Float64,1},Array{Int,1}})
 end
 
 #= Function to parse an int of float64 at once=#
-function parse_int_float64(tp::Union{Type{Float64},Type{Int}},
-    parsing_string::String)::Union{Float64,Int}
+function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
+    parsing_string :: String) :: Union{Float64,Int}
     try
         parsed_result = Base.parse(tp, parsing_string)
         return parsed_result
@@ -31,7 +31,7 @@ end
 #= Function to neglect  the fist N entries from an array =#
 function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)
     try
-        arr = [arr[i] for i in (first_N + 1):length(arr)]
+        deleteat!(arr, 1:first_N)
     catch e
         isa(e, BoundsError)
         printstyled(stderr, "ERROR: cannot neglect first $(first_N)",

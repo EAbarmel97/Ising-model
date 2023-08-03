@@ -1,9 +1,9 @@
 #= Automation of global magnetization time series plot file saving at temperatures ranging from 1.0 to 3.5=#
 include("../scripts/src/graphTrazes.jl")
-using .graphTrazes: save_traze, graph_and_write_over_file!
+using .graphTrazes: save_traze, graph_and_write_over_file!, plot_mean_magn
 
 #auxiliary file directory definitions
-const CURR_DIR = pwd()
+#= const CURR_DIR = pwd()
 const AUTOMATED_SIMULS = CURR_DIR * "/all_simulations/automated/"
 const AUTOMATED_SIMULS_DIR_NAMES= readdir(AUTOMATED_SIMULS)
 
@@ -25,3 +25,7 @@ close(file)
 graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS,file_to_write_over,rgx1)
 graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS,file_to_write_over,rgx2)
 graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS,file_to_write_over,rgx3)
+ =#
+
+#= ploting mean magnetization vs temperature =#
+graphTrazes.plot_mean_magn("mean_magn_automated.txt", "mean_magn.pdf")
