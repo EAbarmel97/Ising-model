@@ -31,7 +31,7 @@ end
 #= Function to neglect  the fist N entries from an array =#
 function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)
     try
-        arr = arr[(first_N+1):length(arr)]
+        arr = [arr[i] for i in (first_N + 1):length(arr)]
     catch e
         isa(e, BoundsError)
         printstyled(stderr, "ERROR: cannot neglect first $(first_N)",
@@ -63,7 +63,7 @@ function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int):: A
     time_series = []
 
     stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file
-    neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
+    stringified_array = neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
     for i in eachindex(stringified_array)
         push!(time_series, parse_int_float64(Float64, stringified_array[i]))
     end
