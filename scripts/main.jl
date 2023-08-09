@@ -4,7 +4,7 @@ using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, u
 using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 
 include("../scripts/src/utilities.jl")
-using .utilities: parse_int_float64, get_array_from_txt, parse_int_float64
+using .utilities: parse_int_float64, get_array_from_txt, parse_int_float64, push_arith_progression!
 
 const SIMULS_DIR = "all_simulations"
 

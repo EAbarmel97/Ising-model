@@ -1,16 +1,17 @@
+using Random
+Random.seed!(1234)
+
 include("../scripts/src/isingMethods.jl")
 using .isingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
 using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization, randomize, set_magnetization
 using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 
 include("../scripts/src/utilities.jl")
-using .utilities: parse_int_float64, get_array_from_txt
+using .utilities: parse_int_float64, get_array_from_txt, use_temperature_array, TEMPERATURE_INTERVALS
 
 include("../scripts/src/exceptions.jl")
 using .exceptions: IlegalChoiceException
 
-using Random
-Random.seed!(1234)
 
 const SIMULS_DIR = "all_simulations"
 const AUTOMATED_SIMULS_DIR = SIMULS_DIR * "/automated"
@@ -48,7 +49,7 @@ println("Increment: ")
 const INCREMENT = utilities.parse_int_float64(Float64, readline())
 
 #= number of different temperatures equaly spaced by given incrments, contained in the interval [Ti, Tf] =#
-const NUM_TEMPS = (FINAL_TEMP - INIT_TEMP)/INCREMENT 
+const NUM_TEMPS = floor(Int,(FINAL_TEMP - INIT_TEMP)/INCREMENT)
 
 println()
 
@@ -126,18 +127,47 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
    end
 end
 
-function main()
-   for i in 0:NUM_TEMPS
+#= do_model function wrapper to make simulations of the ising model at different temperatures =#
+function do_simulations(num_temps :: Int, init_temp, final_temp)
+   for i in 0:num_temps
       #= random initial temperature on the interval [-1 ,1] =#
-      RAND_MAGN = rand()*2 - 1 
+      rand_magn = rand()*2 - 1 
       
       #= temperature increments in arithmetic porgression  =#
-      temp = INIT_TEMP + (i/NUM_TEMPS)*(FINAL_TEMP - INIT_TEMP)
+      temp = init_temp + (i/num_temps)*(final_temp - init_temp)
 
-      do_model(RAND_MAGN, temp, N_GRID) 
+      do_model(rand_magn, temp, N_GRID) 
+   end   
+end
 
-      sleep(3)
+function do_simulations(arr :: Array{Float64,1})
+   for i in eachindex(arr)
+      #= random initial temperature on the interval [-1 ,1] =#
+      rand_magn = rand()*2 - 1 
+      
+      #= temperature increments in arithmetic progression  =#
+      temp = arr[i]
+
+      do_model(rand_magn, temp, N_GRID) 
+   end
+end
+
+#= if user wants to simulate with the default array of temperatures containing temps in the intervals
+   a) 1.0 to 2.2 with increments of 0.1 
+   b) 2.2 to 2.5 with incremets of 0.01 
+   c) 2.5 to 3.5 with increments of 0.1 
+=#
+
+function main()
+   println()
+   if utilities.use_temperature_array()
+      do_simulations(utilities.TEMPERATURE_INTERVALS)
+   else
+      do_simulations(NUM_TEMPS, INIT_TEMP, FINAL_TEMP)         
    end
 end
 
 main()
+ 
+#= 
+println(utilities.TEMPERATURE_INTERVALS) =#
