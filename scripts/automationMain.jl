@@ -49,7 +49,7 @@ println("Increment: ")
 const INCREMENT = utilities.parse_int_float64(Float64, readline())
 
 #= number of different temperatures equaly spaced by given incrments, contained in the interval [Ti, Tf] =#
-const NUM_TEMPS = floor(Int,(FINAL_TEMP - INIT_TEMP)/INCREMENT)
+const NUM_TEMPS = ceil(Int,(FINAL_TEMP - INIT_TEMP)/INCREMENT)
 
 println()
 
@@ -111,7 +111,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
       write(generic_spin_grid_file, "$(stringified_grid_spin)")
       close(generic_spin_grid_file)
 
-      for generation in 1:NUM_GENERATIONS
+      for generation in 1:(NUM_GENERATIONS -1)
          isingMethods.do_generation(ising_model)
          setfield!(ising_model, :cur_gen, generation)
 
@@ -124,6 +124,18 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
          write(generic_spin_grid_file, "$(stringified_grid_spin)\n") #spin grid observation at generation i 
          close(generic_spin_grid_file)
       end
+      # generation == NUM_GENERATIONS
+      isingMethods.do_generation(ising_model)
+      setfield!(ising_model, :cur_gen, NUM_GENERATIONS)
+
+      generic_magnetization_file = open(generic_magnetization_file_name, "a+")
+      write(generic_magnetization_file, "$(ising_model.global_magnetization)") #global magnetization observation at generation i 
+      close(generic_magnetization_file)
+
+      generic_spin_grid_file = open(generic_spin_grid_file_name, "a+")
+      stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
+      write(generic_spin_grid_file, "$(stringified_grid_spin)") #spin grid observation at generation i 
+      close(generic_spin_grid_file)
    end
 end
 
@@ -168,6 +180,3 @@ function main()
 end
 
 main()
- 
-#= 
-println(utilities.TEMPERATURE_INTERVALS) =#
