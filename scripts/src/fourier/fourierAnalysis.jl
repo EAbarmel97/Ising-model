@@ -23,7 +23,7 @@ function write_rfft(arr :: Array{ComplexF64,1}, destination_dir :: AbstractStrin
     close(fourier_transform_file)    
 end
 
-#= Function to compute the spectral density =#
+#= Function to compute the power spectral density =#
 function compute_psd(arr :: Array{ComplexF64,1})
     return abs2.(arr)
 end

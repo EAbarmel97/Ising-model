@@ -75,8 +75,9 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
    ROUNDED_TEMP = round(TEMP, digits=2)
    str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
    aux_dir =  CURR_DIR * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
-
-   mkpath(aux_dir) #creates simulation folder  
+   FOURIER_AUTOMATED_DIR = CURR_DIR * "/fourier"
+   mkpath(aux_dir) #creates simulation folder
+   mkpath(FOURIER_AUTOMATED_DIR)  
 
    #= Global magnetization time series realization will be saved on subdirectories over folder simultations=#
    global_magnetization_aux_dir = aux_dir * "/magnetization"
