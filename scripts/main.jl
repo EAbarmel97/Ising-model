@@ -50,7 +50,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
 
    #= aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp  =#
    aux_dir = CURR_DIR * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
-   FOURIER_DIR = CURR_DIR * "/fourier"
+   FOURIER_DIR = aux_dir * "/fourier"
    
    mkpath(aux_dir) #creates simulation folder
    mkpath(FOURIER_DIR)
@@ -129,8 +129,6 @@ function main()
       println()
 
       do_model(INIT_MAGN, TEMP, N_GRID)
-
-      sleep(3)
    end   
 end 
 

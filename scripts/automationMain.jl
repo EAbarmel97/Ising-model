@@ -16,9 +16,7 @@ using .exceptions: IlegalChoiceException
 const SIMULS_DIR = "all_simulations"
 const AUTOMATED_SIMULS_DIR = SIMULS_DIR * "/automated"
 
-if !isdir(SIMULS_DIR)
-   mkpath(SIMULS_DIR)
-   cd(SIMULS_DIR)
+if !isdir(AUTOMATED_SIMULS_DIR)
    mkpath(AUTOMATED_SIMULS_DIR)
 end
 
@@ -75,7 +73,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
    ROUNDED_TEMP = round(TEMP, digits=2)
    str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
    aux_dir =  CURR_DIR * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
-   FOURIER_AUTOMATED_DIR = CURR_DIR * "/fourier"
+   FOURIER_AUTOMATED_DIR = aux_dir * "/fourier"
    mkpath(aux_dir) #creates simulation folder
    mkpath(FOURIER_AUTOMATED_DIR)  
 

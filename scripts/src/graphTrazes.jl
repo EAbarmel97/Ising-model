@@ -2,6 +2,7 @@ module graphTrazes
 export save_traze, PlottingException, graph_and_write_over_file!, plot_mean_magn
 
 using Plots
+using LaTeXStrings 
 
 include("utilities.jl")
 using .utilities: get_array_from_txt, mean_value, neglect_N_first_from_array!
@@ -15,8 +16,8 @@ function save_traze(dir_to_save::AbstractString, file_path::AbstractString)
     time_series = utilities.get_array_from_txt(file_path)
     x = collect(0:(length(time_series)-1))
     y = time_series
-    plt = plot(x, y, label="Mg_n") #plot reference 
-    hline!([mean, mean])
+    plt = plot(x, y, label= "Mg_n") #plot reference 
+    hline!(plt, [mean, mean], label="<Mg_n>",linewidth=3)
     ylims!(-1.0, 1.0)
     xlims!(0, length(time_series))
     xlabel!("obs")
@@ -29,6 +30,10 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
     file_to_write :: AbstractString, rgx :: Regex)
 
     curr_dir = pwd()
+    GRAPHS_AUTOMATED_DIR = curr_dir * "/graphs/automated/"
+    if !isdir(GRAPHS_AUTOMATED_DIR)
+        mkpath(GRAPHS_AUTOMATED_DIR)
+    end
 
     #filtering all file names that match the given regex 
     filtered_array = filter(str -> contains(str, rgx), dir_names)
@@ -51,10 +56,15 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
         close(mean_vals_file)
         
         aux_graph_file_name = replace(aux_dir_name,"simulations_T_" => "magnetization_ts_")
-        aux_graph_name = curr_dir * "/graphs/" * aux_graph_file_name * ".pdf"
+
+        if contains(aux_dir_name,"automated")
+            aux_graph_full_name = curr_dir * "/graphs/automated/" * aux_graph_file_name * ".pdf"
+        else
+            aux_graph_full_name = curr_dir * "/graphs/" * aux_graph_file_name * ".pdf"
+        end
 
         if isfile(aux_dir) #plot if file exists
-            save_traze(aux_graph_name, aux_dir)
+            save_traze(aux_graph_full_name, aux_dir)
         end
     end  
 end
@@ -80,7 +90,7 @@ function plot_mean_magn(file_dir :: AbstractString, dir_to_save :: AbstractStrin
     end
 
     if isfile(file_dir)
-        plt = plot(temps, mean_magns)
+        plt = plot(temps, mean_magns, label = "<Mg_n>")
         ylims!(0.0, 1.0)
         xlims!(0,3.5)
         xlabel!("temp")

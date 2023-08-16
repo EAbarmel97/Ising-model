@@ -33,8 +33,8 @@ end
 
 #= Function to match user input =#
 function use_temperature_array() :: Bool
-    println("use temperature array?: [y/n]")
     println()
+    print("use temperature array?: [y/n]")
     usr_input = lowercase(readline())
     while true
         if usr_input == "y"
@@ -118,7 +118,8 @@ function push_arith_progression!(Ti :: Float64, Tf :: Float64, delta :: Float64,
     end  
 end
 
-aux_temps_intervals = [1.0]
+aux_temps_intervals = [0.0]
+push_arith_progression!(0.0,1.0,0.1,aux_temps_intervals)
 push_arith_progression!(1.0,2.2,0.1,aux_temps_intervals)
 push_arith_progression!(2.2,2.5,0.01,aux_temps_intervals)
 push_arith_progression!(2.5,3.5,0.1,aux_temps_intervals)
