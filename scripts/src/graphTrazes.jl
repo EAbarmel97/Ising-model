@@ -11,17 +11,18 @@ include("exceptions.jl")
 using .exceptions: PlottingException
 
 #= Function to save the traces of the time series contained in .txt files =#
-function save_traze(dir_to_save::AbstractString, file_path::AbstractString)
+function save_traze(dir_to_save::AbstractString, 
+                        file_path::AbstractString)
     mean = utilities.mean_value(file_path)
     time_series = utilities.get_array_from_txt(file_path)
     x = collect(0:(length(time_series)-1))
     y = time_series
-    plt = plot(x, y, label= "Mg_n") #plot reference 
-    hline!(plt, [mean, mean], label="<Mg_n>",linewidth=3)
+    plt = plot(x, y, label= L"Mg_n") #plot reference 
+    hline!(plt, [mean, mean], label=L"\hat{M_n}",linewidth=3)
     ylims!(-1.0, 1.0)
     xlims!(0, length(time_series))
-    xlabel!("obs")
-    ylabel!("magn time series")
+    xlabel!(L"n")
+    ylabel!(L"M_n")
     savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
 end
 
@@ -90,11 +91,11 @@ function plot_mean_magn(file_dir :: AbstractString, dir_to_save :: AbstractStrin
     end
 
     if isfile(file_dir)
-        plt = plot(temps, mean_magns, label = "<Mg_n>")
+        plt = plot(temps, mean_magns, label = L"\hat{M_n}")
         ylims!(0.0, 1.0)
         xlims!(0,3.5)
-        xlabel!("temp")
-        ylabel!("mean_magn")
+        xlabel!(L"t")
+        ylabel!(L"mean magnetization")
         savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory 
     end 
 

@@ -70,9 +70,11 @@ function plot_psd(rfft_paths :: Union{AbstractString, AbstractArray}, dir_to_sav
         x = sampling_freq_arr(rfft_paths)
         psd_rfft = compute_psd(rfft)
         #= plot styles =#
-        plt = plot(x, psd_rfft) #plot reference 
-        xlabel!("frec")
-        ylabel!("psd")
+        plt = plot(x, psd_rfft, label=L"$\lVert DFT[M_n] \rVert^2$") #plot reference 
+        
+        title!(L"Power density spectrum from $M_n$, initital temperature")
+        xlabel!(L"f")
+        ylabel!(L"PSD(f)")
         savefig(plt, graph_file_name)
     end
 
@@ -95,10 +97,9 @@ function plot_psd(rfft_paths :: Union{AbstractString, AbstractArray}, dir_to_sav
             for i in eachindex(aux_rfft_paths)
                 rfft = utilities.get_array_from_txt(aux_rfft_paths[i])
                 psd_rfft = compute_psd(rfft)
-                
-                plt = plot(x,psd_rfft) #plot reference 
+                plt = plot(x,psd_rfft, label=L"DFT(X(t))") #plot reference 
                 #= plot styles =#
-                xlabel!("frec")
+                xlabel!(L"\omega") 
                 ylabel!("psd")
                 savefig(plt, graph_file_name) 
             end    

@@ -11,6 +11,7 @@ const AUTOMATED_SIMULS = CURR_DIR * "/all_simulations/automated/"
 const AUTOMATED_SIMULS_DIR_NAMES= readdir(AUTOMATED_SIMULS)
 
 #= regex'es =# 
+rgx0 = r"T_0\d{1,2}"
 rgx1 = r"T_1_\d{1,2}"
 rgx2 = r"T_2_\d{1,2}"
 rgx3 = r"T_3_\d{1,2}"
@@ -25,6 +26,7 @@ write(file,"temp,mean_magn\n")
 close(file)
 
 #= plotting each temperature group and appending it over the file mean_magn_automated.txt =#
+graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS,file_to_write_over,rgx0)
 graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS,file_to_write_over,rgx1)
 graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS,file_to_write_over,rgx2)
 graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS,file_to_write_over,rgx3)
