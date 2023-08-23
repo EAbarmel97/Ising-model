@@ -86,7 +86,7 @@ function plot_psd(rfft_paths :: Union{AbstractString, AbstractArray}, dir_to_sav
             push!(arr_str_temps,str_temp)
         end
         
-        aux_rfft_paths = string.("all_simulations",rfft_paths,"/rfft_global_magnetization", 
+        aux_rfft_paths = string.(rfft_paths,"/rfft_global_magnetization", 
                                 arr_str_temps, ".txt") 
 
         x =  sampling_freq_arr(aux_rfft_paths)
