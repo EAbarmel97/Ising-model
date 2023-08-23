@@ -9,9 +9,9 @@ using .exceptions: NotIntegerException
 
 
 #= Function for swaping values at diferent index locations returning array =#
-    function swap!(val1::Int, val2::Int, obj::Union{Array{Float64,1},Array{Int,1}})
-        temp = obj[val1]
-        obj[val1] = obj[val2]
+function swap!(val1::Int, val2::Int, obj::Union{Array{Float64,1},Array{Int,1}})
+    temp = obj[val1]
+    obj[val1] = obj[val2]
     obj[val2] = temp
     setindex!(obj, obj[val1], val1)
     setindex!(obj, obj[val2], val2)
@@ -36,6 +36,7 @@ function use_temperature_array() :: Bool
     println()
     print("use temperature array?: [y/n]")
     usr_input = lowercase(readline())
+    
     while true
         if usr_input == "y"
             return true
@@ -106,9 +107,10 @@ end
 function push_arith_progression!(Ti :: Float64, Tf :: Float64, delta :: Float64,
     arr :: AbstractArray)
     val = cld(Tf-Ti,delta)
-    umbral = round(abs(Tf - (Ti + val*delta)),digits=2)
-    # Tf is not in arithmetic progresion with Ti
-    if umbral <= 0.1
+    umbral = round(abs(Tf - (Ti + val*delta)), digits=2)
+    #= If the umbral lies in the interval (0,0.1], then Tf is taken to be in arithmetic 
+       progression with Ti =#
+    if umbral <= 0.1 
         for i in 1:val
             new_val = Ti + i*delta
             push!(arr,new_val) 

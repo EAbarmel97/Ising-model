@@ -2,6 +2,9 @@
 include("../scripts/src/graphTrazes.jl")
 using .graphTrazes: save_traze, graph_and_write_over_file!, plot_mean_magn
 
+include("src/fourier/fourierAnalysis.jl")
+using .fourierAnalysis: write_rfft
+
 #auxiliary file directory definitions
 const CURR_DIR = pwd()
 const AUTOMATED_SIMULS = CURR_DIR * "/all_simulations/automated/"
