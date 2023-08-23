@@ -54,8 +54,8 @@ end
 
 #= 
 Function to plot the psd with option to plot it in the same canvas providing a dir where
-.txt files with rfft to read from are available or to plot from single text. By default same_canvas is 
-set to be false
+.txt files with rfft to read from are available or to plot from single text. By default different_canvas is 
+set to be true.
 
 NOTE: 
 Plot is diplayed in a frecuency vs pwd manner 
