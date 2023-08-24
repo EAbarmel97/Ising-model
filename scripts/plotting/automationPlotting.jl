@@ -1,8 +1,8 @@
 #= Automation of global magnetization time series plot file saving at temperatures ranging from 1.0 to 3.5=#
-include("../scripts/src/graphTrazes.jl")
+include("../src/graphTrazes.jl")
 using .graphTrazes: save_traze, graph_and_write_over_file!, plot_mean_magn
 
-include("src/fourier/fourierAnalysis.jl")
+include("../src/fourier/fourierAnalysis.jl")
 using .fourierAnalysis: write_rfft
 
 #auxiliary file directory definitions
