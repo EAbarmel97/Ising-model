@@ -11,7 +11,7 @@ const AUTOMATED_SIMULS = CURR_DIR * "/all_simulations/automated/"
 const AUTOMATED_SIMULS_DIR_NAMES= readdir(AUTOMATED_SIMULS)
 
 #= regex'es =# 
-rgx0 = r"T_0\d{1,2}"
+rgx0 = r"T_0_\d{1,2}"
 rgx1 = r"T_1_\d{1,2}"
 rgx2 = r"T_2_\d{1,2}"
 rgx3 = r"T_3_\d{1,2}"

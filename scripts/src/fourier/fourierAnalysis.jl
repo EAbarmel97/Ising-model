@@ -33,7 +33,7 @@ function write_rfft(arr :: Array{ComplexF64,1}, destination_dir :: AbstractStrin
 end
 
 #= Function to compute the power spectral density =#
-function compute_psd(arr :: Array{ComplexF64,1}) :: Array{Float64,1}
+function compute_psd(arr :: Array{T,1}) :: Array{Float64,1} where T <: Complex  
     return abs2.(arr)
 end
 
@@ -59,7 +59,7 @@ Function to plot the psd with option to plot it in the same canvas providing a d
 set to be true.
 
 NOTE: 
-Plot is diplayed in a frecuency vs pwd manner 
+Plot is diplayed in a frecuency vs psd manner 
 =#
 
 function plot_psd(rfft_paths :: Union{AbstractString, AbstractArray}, dir_to_save :: AbstractString,

@@ -10,6 +10,9 @@ using .utilities: get_array_from_txt, mean_value, neglect_N_first_from_array!
 include("exceptions.jl")
 using .exceptions: PlottingException
 
+include("ising.jl")
+using .ising: CRITICAL_TEMP
+
 #= Function to save the traces of the time series contained in .txt files =#
 function save_traze(dir_to_save::AbstractString, 
                         file_path::AbstractString)
@@ -17,8 +20,8 @@ function save_traze(dir_to_save::AbstractString,
     time_series = utilities.get_array_from_txt(file_path)
     x = collect(0:(length(time_series)-1))
     y = time_series
-    plt = plot(x, y, label= L"Mg_n") #plot reference 
-    hline!(plt, [mean, mean], label=L"\hat{M_n}",linewidth=3)
+    plt = plot(x, y, label= L"M_n") #plot reference 
+    hline!(plt, [mean, mean], label=L"\overline{M}_n",linewidth=3)
     ylims!(-1.0, 1.0)
     xlims!(0, length(time_series))
     xlabel!(L"n")
@@ -57,9 +60,9 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
         close(mean_vals_file)
         
         aux_graph_file_name = replace(aux_dir_name,"simulations_T_" => "magnetization_ts_")
-
-        if contains(aux_dir_name,"automated")
-            aux_graph_full_name = curr_dir * "/graphs/automated/" * aux_graph_file_name * ".pdf"
+        
+        if contains(aux_dir,"automated")
+            aux_graph_full_name = GRAPHS_AUTOMATED_DIR * aux_graph_file_name * ".pdf"
         else
             aux_graph_full_name = curr_dir * "/graphs/" * aux_graph_file_name * ".pdf"
         end
@@ -78,7 +81,6 @@ function plot_mean_magn(file_dir :: AbstractString, dir_to_save :: AbstractStrin
     mean_magn_file = open(file_dir, "r+")
     arr_str = readlines(mean_magn_file) 
     neglect_N_first_from_array!(arr_str,1) #discarting the headers
-    println(arr_str)
 
     for i in eachindex(arr_str)
         substr_temp_and_mean_magn_arr = split(arr_str[i],",")
@@ -91,11 +93,12 @@ function plot_mean_magn(file_dir :: AbstractString, dir_to_save :: AbstractStrin
     end
 
     if isfile(file_dir)
-        plt = plot(temps, mean_magns, label = L"\hat{M_n}")
+        plt = plot(temps, mean_magns, label = L"\overline{M}_n")
         ylims!(0.0, 1.0)
         xlims!(0,3.5)
-        xlabel!(L"t")
-        ylabel!(L"mean magnetization")
+        vline!(plt, [ising.CRITICAL_TEMP, ising.CRITICAL_TEMP], label=L"T_c", linewidth=1, fillalpha=0.02)
+        xlabel!(L"T")
+        ylabel!("mean magnetization")
         savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory 
     end 
 
