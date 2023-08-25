@@ -101,7 +101,6 @@ function plot_mean_magn(file_dir :: AbstractString, dir_to_save :: AbstractStrin
         ylabel!("mean magnetization")
         savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory 
     end 
-
     close(mean_magn_file)
 end
 end #end of modules

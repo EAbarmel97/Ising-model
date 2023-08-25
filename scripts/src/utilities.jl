@@ -31,6 +31,19 @@ function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
     end
 end
 
+#= Function to parse complex input ina string =#
+function parse_complex(tp :: Type{T}, parsing_string :: String) where T <: Complex
+    try
+        parsed_result = Base.parse(tp, parsing_string)
+        return parsed_result
+    catch e
+        isa(e, ArgumentError)
+        printstyled(stderr, "ERROR: imposible to parse a type $tp from '$parsing_string'",
+            bold=true, color=:red) #customized error message 
+        println(stderr)
+    end
+end
+
 #= Function to match user input =#
 function use_temperature_array() :: Bool
     println()
@@ -59,8 +72,8 @@ function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)
         printstyled(stderr, "ERROR: cannot neglect first $(first_N)",
             bold=true, color=:red) #customized error message 
             println(stderr)
-        end
     end
+end
 
     #= Gets an array of strings form a .txt file =#
 function get_str_array(file_path::AbstractString):: Array{String,1}
@@ -91,6 +104,28 @@ function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int):: A
     end
     
     return time_series
+end
+
+#= Method to parse an array from a .txt file =#
+function get_array_from_txt(tp :: Union{Type{Float64}, Type{Complex{Float64}}},file_path :: AbstractString, 
+                prune_first_N=0 :: Int)
+
+    time_series = []
+    stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file
+    stringified_array = neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
+
+    for i in eachindex(stringified_array)
+        if tp == Float64
+            push!(time_series, parse_int_float64(Float64, stringified_array[i]))
+        end 
+        
+        if  tp == Complex{Float64}
+            push!(time_series, parse_complex(ComplexF64, stringified_array[i]))
+        end
+    end
+
+    return time_series
+    
 end
 
 #= Function to get the arithmetic mean value of a given time series=#
