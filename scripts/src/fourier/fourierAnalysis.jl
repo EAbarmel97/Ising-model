@@ -8,18 +8,19 @@ using LaTeXStrings
 include("../utilities.jl")
 using .utilities: get_array_from_txt
 
-#= Function wrapper to the FFTW's rfft method =#
+#= Function wrapper to the FFTW's rfft method. This wrapper takes a .txt file of numbers, parses them 
+   an computes the rfft =#
 function compute_rfft(file_path :: AbstractString) :: Array{ComplexF64,1}
     time_series = utilities.get_array_from_txt(file_path)
     return rfft(time_series) 
-end
+end 
 
 #= Function to write over a .txt file a vector with the rfft of a signal(time series) =#
 function write_rfft(arr :: Array{ComplexF64,1}, destination_dir :: AbstractString, 
-    at_temp :: Float64)
+    at_temp :: Float64, run :: Int)
     rounded_temp = round(at_temp, digits=2)
     str_rounded_temp = replace("$rounded_temp","." => "_")
-    file_name = "$destination_dir/rfft_global_magnetization_$(str_rounded_temp).txt"
+    file_name = "$destination_dir/rfft_global_magnetization_$(str_rounded_temp)_$run.txt"
     touch(file_name)
     fourier_transform_file = open(file_name,"a+")
     for i in eachindex(arr)
