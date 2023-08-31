@@ -10,6 +10,7 @@ const SIMULS_DIR = CURR_DIR * "/all_simulations/"
 const PSD_GRAPHS = "graphs/psd/"
 const ALL_SIMULS_DIRS = readdir(SIMULS_DIR)
 const ALL_GLOBAL_MAGN_DIRS = string.(SIMULS_DIR,ALL_SIMULS_DIRS,"/magnetization/")
+const ALL_RFFTS = string.(AUTOMATED_SIMULS_DIR,ALL_SIMULS_DIRS,"/fourier/")
 
 #number of runs equals the number of files in ../magnetization/ and is the same for each simulations_T_x_y_z/magnetization dir 
 const NUM_RUNS = length(readdir(ALL_GLOBAL_MAGN_DIRS[1]))
@@ -47,9 +48,12 @@ for run in 1:NUM_RUNS
         end                                                             
     end 
     
-    #= 
-    TO DO: change logic disign to be able to interactively ask to the user how to plot the power denstiy spectra 
-    =#
+    #ploting power density spectra
+    for i in eachindex(ALL_RFFTS)
+       rftt_file_name = readdir(ALL_RFFTS[i])[run]
+       rftt_full_path = ALL_RFFTS[i] * rftt_file_name
+       fourierAnalysis.plot_psd(rftt_full_path,PSD_GRAPHS)
+    end
     
 end      
 

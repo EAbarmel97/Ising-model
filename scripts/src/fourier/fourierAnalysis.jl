@@ -100,7 +100,7 @@ function plot_psd(str_rfft_path :: Union{AbstractString, AbstractArray}, destina
         plt = plot(f, psd, label=L"PSD \ \left( f \right)") #plot reference 
         title!("PSD associated to a ts with init temp = $(str_temp)")
         xlabel!(L"f")
-        ylabel!("power density spectra")
+        ylabel!("power density spectrum")
         #= file saving  =#
         savefig(plt, full_file_path)
     end
