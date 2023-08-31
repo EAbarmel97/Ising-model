@@ -1,5 +1,5 @@
 include("../src/fourier/fourierAnalysis.jl")
-using .fourierAnalysis: compute_rfft, compute_psd, sampling_freq_arr
+using .fourierAnalysis: compute_rfft, compute_psd, sampling_freq_arr, plot_psd
 
 include("../src/utilities.jl")
 using .utilities: get_array_from_txt, parse_int_float64
@@ -10,6 +10,8 @@ const AUTOMATED_SIMULS_DIR = CURR_DIR * "/all_simulations/automated/"
 const AUTOMATED_PSD_GRAPHS = "graphs/automated/psd/"
 const ALL_AUTOMATED_SIMULS_DIRS = readdir(AUTOMATED_SIMULS_DIR)
 const ALL_GLOBAL_MAGN_DIRS = string.(AUTOMATED_SIMULS_DIR,ALL_AUTOMATED_SIMULS_DIRS,"/magnetization/")
+const ALL_AUTOMATED_RFFTS = string.(AUTOMATED_SIMULS_DIR,ALL_AUTOMATED_SIMULS_DIRS,"/fourier/")
+const DESTINATION_DIR = AUTOMATED_SIMULS_DIR * AUTOMATED_PSD_GRAPHS
 
 #number of runs equals the number of files in ../magnetization/ and is the same for each simulations_T_x_y_z/magnetization dir 
 const NUM_RUNS = length(readdir(ALL_GLOBAL_MAGN_DIRS[1]))
@@ -47,10 +49,12 @@ for run in 1:NUM_RUNS
         end                                                             
     end 
     
-    #= 
-    TO DO: change logic disign to be able to interactively ask to the user how to plot the power denstiy spectra 
-    =#
-    
+    #ploting power density spectra
+    for i in eachindex(ALL_AUTOMATED_RFFTS) 
+        rftt_file_name = readdir(ALL_AUTOMATED_RFFTS[i])[1]
+        rftt_full_path = ALL_AUTOMATED_RFFTS[i] * rftt_file_name
+        fourierAnalysis.plot_psd(rftt_full_path,DESTINATION_DIR)
+    end    
 end
 
    
