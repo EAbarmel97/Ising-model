@@ -106,9 +106,9 @@ function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int):: A
     return time_series
 end
 
-#= Method to parse an array from a .txt file =#
+#= Method to parse an array with elements Float64 or ComplexF64 from a .txt file =#
 function get_array_from_txt(tp :: Union{Type{Float64}, Type{Complex{Float64}}},file_path :: AbstractString, 
-                prune_first_N=0 :: Int)
+                prune_first_N=0 :: Int) :: Array{Union{ComplexF64,Float64},1}
 
     time_series = []
     stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file
@@ -120,7 +120,7 @@ function get_array_from_txt(tp :: Union{Type{Float64}, Type{Complex{Float64}}},f
         end 
         
         if  tp == Complex{Float64}
-            push!(time_series, parse_complex(ComplexF64, stringified_array[i]))
+            push!(time_series, parse_complex(Complex{Float64}, stringified_array[i]))
         end
     end
 

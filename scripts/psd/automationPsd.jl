@@ -11,7 +11,6 @@ const AUTOMATED_PSD_GRAPHS = "graphs/automated/psd/"
 const ALL_AUTOMATED_SIMULS_DIRS = readdir(AUTOMATED_SIMULS_DIR)
 const ALL_GLOBAL_MAGN_DIRS = string.(AUTOMATED_SIMULS_DIR,ALL_AUTOMATED_SIMULS_DIRS,"/magnetization/")
 const ALL_AUTOMATED_RFFTS = string.(AUTOMATED_SIMULS_DIR,ALL_AUTOMATED_SIMULS_DIRS,"/fourier/")
-const DESTINATION_DIR = AUTOMATED_SIMULS_DIR * AUTOMATED_PSD_GRAPHS
 
 #number of runs equals the number of files in ../magnetization/ and is the same for each simulations_T_x_y_z/magnetization dir 
 const NUM_RUNS = length(readdir(ALL_GLOBAL_MAGN_DIRS[1]))
@@ -35,7 +34,7 @@ for run in 1:NUM_RUNS
         
         #dir where rfft will be saved
         fourier_dir =  AUTOMATED_SIMULS_DIR * ALL_AUTOMATED_SIMULS_DIRS[i] * "/fourier/"
-        rfft_path = fourier_dir * fourier_dir * "rfft_global_magnetization_$str_temp$run.txt"
+        rfft_path = fourier_dir * "rfft_global_magnetization_$str_temp$run.txt"
 
         #if strigified rfft file doesn't exist at dir ../automated/simulations_T_x_y_z/fourier/
         if !isfile(rfft_path)
@@ -51,10 +50,14 @@ for run in 1:NUM_RUNS
     
     #ploting power density spectra
     for i in eachindex(ALL_AUTOMATED_RFFTS) 
-        rftt_file_name = readdir(ALL_AUTOMATED_RFFTS[i])[1]
+        rftt_file_name = readdir(ALL_AUTOMATED_RFFTS[i])[run]
         rftt_full_path = ALL_AUTOMATED_RFFTS[i] * rftt_file_name
-        fourierAnalysis.plot_psd(rftt_full_path,DESTINATION_DIR)
-    end    
+        fourierAnalysis.plot_psd(rftt_full_path,AUTOMATED_PSD_GRAPHS)
+    end
 end
+
+
+
+
 
    
