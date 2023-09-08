@@ -46,15 +46,19 @@ for run in 1:NUM_RUNS
             #rfft is saved  as a .txt in ../automated/simulations_T_x_y_z/fourier/
             fourierAnalysis.write_rfft(rfft,fourier_dir,temp,run)
         end                                                             
-    end 
-    
+    end
+
+    RFFT_FULL_PATHS = []
+
     #ploting power density spectra
     for i in eachindex(ALL_AUTOMATED_RFFTS) 
         rftt_file_name = readdir(ALL_AUTOMATED_RFFTS[i])[run]
         rftt_full_path = ALL_AUTOMATED_RFFTS[i] * rftt_file_name
-        fourierAnalysis.plot_psd(rftt_full_path,AUTOMATED_PSD_GRAPHS)
-    end
+        push!(RFFT_FULL_PATHS,rftt_full_path)
+        fourierAnalysis.plot_psd(rftt_full_path,AUTOMATED_PSD_GRAPHS,run)
+    end 
 end
+    
 
 
 

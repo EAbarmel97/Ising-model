@@ -1,6 +1,5 @@
 module utilities
-export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS
-
+export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS, replace_with_dict
 include("../src/ising.jl")
 using .ising: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
 
@@ -162,4 +161,9 @@ push_arith_progression!(2.2,2.5,0.01,aux_temps_intervals)
 push_arith_progression!(2.5,3.5,0.1,aux_temps_intervals)
 
 const TEMPERATURE_INTERVALS = aux_temps_intervals
+
+#= method to replace a function with a replacement dictionary =#
+function replace_with_dict(str :: String, replace_dict :: Dict{T, String} where T <: Any) :: String 
+    return replace(str,replace_dict...)
+end
 end #end of module

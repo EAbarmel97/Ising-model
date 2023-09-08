@@ -6,7 +6,7 @@ using Plots
 using LaTeXStrings
 
 include("../utilities.jl")
-using .utilities: get_array_from_txt
+using .utilities: get_array_from_txt, replace_with_dict
 #= Auxiliray constants =#
 
 const PSD_GRAPHS =  "graphs/psd"
@@ -46,67 +46,133 @@ function compute_psd(arr :: Array{T,1} where T <: Complex) :: Array{Float64,1}
     return abs2.(arr)
 end
 
-#= Function to determine the array containing sampling frecuencies =#
-function sampling_freq_arr(rfft_paths :: Union{AbstractString, AbstractArray},
-    arr_str_temp :: AbstractArray = []) :: Array{Float64,1}
-    if typeof(rfft_paths) <: AbstractString  && isempty(arr_str_temp)
-        rfft = utilities.get_array_from_txt(ComplexF64,rfft_paths)
-        return fftfreq(length(rfft))
+#= Function to determine the array containing sampling frecuencies when an abs path is given as argument =#
+function sampling_freq_arr(rfft_paths :: AbstractString) :: Array{Float64,1}
+    rfft = utilities.get_array_from_txt(ComplexF64,rfft_paths)
+    #converting to Array{Float64} to be able to use deleteat!
+    sampling_freq_arr = rfftfreq(2*length(rfft))
+    freq_arr = convert.(Float64,sampling_freq_arr)
+
+    deleteat!(freq_arr,length(freq_arr)) #lastest entry gets discarted 
+    replace!(x -> iszero(x) ? 1.0e-16 : x, freq_arr ) #zero values are substituted by a very small non-zero value 
+    return freq_arr
+end
+
+#= Function to determine the array containing sampling frecuencies when an array of abs paths are given as argument =#
+function sampling_freq_arr(rfft_paths :: AbstractArray, arr_str_temp :: AbstractArray) :: Array{Float64,1}
+    #array with full paths to to the stringified rftts files
+    aux_rfft_paths = string.(rfft_paths,"/rfft_global_magnetization",arr_str_temp,".txt")
+    aux_rfft = utilities.get_array_from_txt(ComplexF64,aux_rfft_paths[1]) 
+    #converting to array of Float64
+    sampling_freq_arr = rfftfreq(2*length(aux_rfft))
+    freq_arr = convert.(Float64,sampling_freq_arr)
+
+    deleteat!(freq_arr,length(freq_arr)) #lastest entry gets discarted 
+    replace!(x -> iszero(x) ? 1.0e-16 : x, freq_arr ) #zero values are substituted by a very small non-zero value 
+    return freq_arr
+end
+
+#= function that returns the stringified temperature but with "_" as a separator =#
+function get_str_dashed_temp(str_rfft_path :: AbstractString) :: AbstractString
+    curr_dir = pwd()
+    #replacement dictionary
+    replace_dict = Dict(curr_dir => "","/all_simulations/automated/simulations_T_" => "",
+    r"/fourier/rfft_global_magnetization_\d{1}_\d{1,2}_\d{1}.txt" => "")
+
+    if contains(str_rfft_path,r"/all_simulations/automated/")
+        str_dashed_temp = utilities.replace_with_dict(str_rfft_path, replace_dict)
+    else
+        str_dashed_temp = utilities.replace_with_dict(str_rfft_path, replace_dict)
     end
-    #input is an aray of directories
-    if typeof(rfft_paths) <: AbstractArray && !isempty(arr_str_temp)
-        #array with full paths to to the stringified rftts files
-        aux_rfft_paths = string.(rfft_paths,"/rfft_global_magnetization",arr_str_temp,".txt")
-        aux_rfft = utilities.get_array_from_txt(ComplexF64,aux_rfft_paths[1]) 
-        return fftfreq(length(aux_rfft))
-    end
+
+    return str_dashed_temp
+end
+
+
+#= 
+Module method for plotting psd wuth options to plot a psd providing one generic 
+under which all psd will be saved. 
+
+NOTE: the path to the rfft .txt file need to be absulute 
+=#
+function plot_psd(str_rfft_path :: AbstractString, destination_dir :: AbstractString, run :: Int)
+    curr_dir = pwd()
+    full_file_path = destination_dir
+    #array of sampling frequencies
+    f = sampling_freq_arr(str_rfft_path)
+
+    rfft = utilities.get_array_from_txt(Complex{Float64},str_rfft_path) #rfft of the M_n with initial temperature x_y_z
+    rfft = convert.(ComplexF64,rfft) #casting array to ComplexF64
+    
+    psd = fourierAnalysis.compute_psd(rfft) #array with the psd THE RFFT[M_n]
+    
+    #string manipulations
+    str_dashed_temp = get_str_dashed_temp(str_rfft_path)
+    full_file_path *= "psd_$(str_dashed_temp)_r$(run).pdf" 
+    replace_dict = Dict("_" => ".")
+    str_temp = replace_with_dict(str_dashed_temp,replace_dict)
+    
+    #= plot styling =#
+    plt = plot(f, psd, label=L"PSD \ \left( f \right)") #plot reference 
+    title!("PSD associated to a ts with init temp = $(str_temp)")
+    xlabel!(L"f")
+    ylabel!("power density spectrum")
+
+    #= file saving  =#
+    savefig(plt, full_file_path)        
 end
 
 #= 
-Module method for plotting psd wuth options to plot several psd on the same canvas or one by one, providing one generic 
-under which all psd will be saved. By default the argument different_canvas is set to be true.
+Module method for plotting psd wuth options to plot several psd on the same canvas, providing one generic 
+under which all psd will be saved. 
 
-NOTE: the path/s to the rfft .txt files need to be absulute path/s 
+NOTE: the paths to the rffts .txt files need to be absulute path/s 
 =#
-function plot_psd(str_rfft_path :: Union{AbstractString, AbstractArray}, destination_dir :: AbstractString, different_canvas  = true :: Bool)
+function plot_psd(str_rfft_paths :: AbstractArray, destination_dir :: AbstractString, run :: Int )
     curr_dir = pwd()
     full_file_path = destination_dir
-    #just one psd will be plotted
-    if typeof(str_rfft_path) <: AbstractString && different_canvas
-        #array of sampling frequencies
-        f = sampling_freq_arr(str_rfft_path)
+    #auxiliar arrays
+    str_dashed_temp_array = []
+    psd_array = []
 
+    
+    for i in eachindex(str_rfft_paths)
+        str_rfft_path = str_rfft_paths[i]
+
+        #= fetching and appending psd to the array containg the power spectra densities =#
         rfft = utilities.get_array_from_txt(Complex{Float64},str_rfft_path) #rfft of the M_n with initial temperature x_y_z
         rfft = convert.(ComplexF64,rfft) #casting array to ComplexF64
-
         psd = fourierAnalysis.compute_psd(rfft) #array with the psd THE RFFT[M_n]
-         
-        #getting stringified temperature but with "_" as a digit separator
-        if contains(str_rfft_path,r"/all_simulations/automated/")
-            str_temp = replace(str_rfft_path, curr_dir => "","/all_simulations/automated/simulations_T_" => "",
-            r"/fourier/rfft_global_magnetization_\d{1}_\d{1,2}_\d{1}.txt" => "")
+        push!(psd_array,psd)
 
-        else
-            str_temp = replace(str_rfft_path, curr_dir => "","/all_simulations/simulations_T_" => "",
-            r"/fourier/rfft_global_magnetization_\d{1}_\d{1,2}_\d{1}.txt" => "")
-    
+        if i == 1
+            str_dashed_temp1 = get_str_dashed_temp(str_rfft_path)
+            push!(str_temp_array,str_dashed_temp1)   
         end
-        full_file_path *= "psd_$(str_temp).pdf" 
 
-        #strigified temperature 
-        str_temp = replace(str_temp, "_" => ".")
-
-        #= plot styling =#
-        plt = plot(f, psd, label=L"PSD \ \left( f \right)") #plot reference 
-        title!("PSD associated to a ts with init temp = $(str_temp)")
-        xlabel!(L"f")
-        ylabel!("power density spectrum")
-        #= file saving  =#
-        savefig(plt, full_file_path)
+        if i == length(str_rfft_path)
+            str_dashed_temp2 = get_str_dashed_temp(str_rfft_path)
+            push!(str_temp_array,str_dashed_temp2)  
+        end    
     end
     
-    if typeof(str_rfft_path) <: AbstractArray && different_canvas
-        #= TO DO: implement logic when an array of full paths to the stringified rfft are given =#
-    end
+    #string manipulations
+    full_file_path *= "psd_$(str_dashed_temp_array[1])_to_$(str_dashed_temp_array[2])_r$(run).pdf" 
+    replace_dict = Dict("_" => ".")
+    str_temp_array = replace_with_dict.(str_dashed_temp,replace_dict)
+
+    #sampling frecuencies
+    f = sampling_freq_arr(str_rfft_path,temp_array)
+    
+    #= plot styling =#
+    plt = plot(f, psd_array, label=L"PSD \ \left( f \right)") #plot reference 
+    
+
+    title!("PSD associated to a ts with init temps from $(str_temp_array[1]) to $(str_temp_array[n])")
+    xlabel!(L"f")
+    ylabel!("power density spectra")
+
+    #= file saving  =#
+    savefig(plt, full_file_path)    
 end
 end #end of module 

@@ -53,10 +53,6 @@ for run in 1:NUM_RUNS
        rftt_file_name = readdir(ALL_RFFTS[i])[run]
        rftt_full_path = ALL_RFFTS[i] * rftt_file_name
        fourierAnalysis.plot_psd(rftt_full_path,PSD_GRAPHS)
-    end
-    
+    end    
 end      
-
-   
-
 
