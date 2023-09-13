@@ -40,7 +40,7 @@ for run in 1:NUM_RUNS
         if !isfile(rfft_path)
             #rfft is computed from .txt files containing the global magnetization time series
             rfft = fourierAnalysis.compute_rfft(global_magn_ts_path)
-
+            
             temp = utilities.parse_int_float64(Float64,str_temp)
             
             #rfft is saved  as a .txt in ../automated/simulations_T_x_y_z/fourier/

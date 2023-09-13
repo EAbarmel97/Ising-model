@@ -6,7 +6,7 @@ using Plots
 using LaTeXStrings
 
 include("../utilities.jl")
-using .utilities: get_array_from_txt, replace_with_dict
+using .utilities: get_array_from_txt, replace_with_dict,neglect_N_first_from_array!
 #= Auxiliray constants =#
 
 const PSD_GRAPHS =  "graphs/psd"
@@ -47,28 +47,32 @@ function compute_psd(arr :: Array{T,1} where T <: Complex) :: Array{Float64,1}
 end
 
 #= Function to determine the array containing sampling frecuencies when an abs path is given as argument =#
-function sampling_freq_arr(rfft_paths :: AbstractString) :: Array{Float64,1}
-    rfft = utilities.get_array_from_txt(ComplexF64,rfft_paths)
-    #converting to Array{Float64} to be able to use deleteat!
-    sampling_freq_arr = rfftfreq(2*length(rfft))
-    freq_arr = convert.(Float64,sampling_freq_arr)
+function sampling_freq_arr(file_path :: AbstractString) :: Array{Float64,1}
+    freq_arr = []
+    open(file_path,"r") do io
+        num_lines = countlines(io)
+        #converting to Array{Float64} to be able to use deleteat!
+        sampling_freq_arr = rfftfreq(num_lines)
+        freq_arr = convert.(Float64,sampling_freq_arr) 
 
-    deleteat!(freq_arr,length(freq_arr)) #lastest entry gets discarted 
-    replace!(x -> iszero(x) ? 1.0e-16 : x, freq_arr ) #zero values are substituted by a very small non-zero value 
+        deleteat!(freq_arr,1)
+    end    
     return freq_arr
 end
 
 #= Function to determine the array containing sampling frecuencies when an array of abs paths are given as argument =#
-function sampling_freq_arr(rfft_paths :: AbstractArray, arr_str_temp :: AbstractArray) :: Array{Float64,1}
-    #array with full paths to to the stringified rftts files
-    aux_rfft_paths = string.(rfft_paths,"/rfft_global_magnetization",arr_str_temp,".txt")
-    aux_rfft = utilities.get_array_from_txt(ComplexF64,aux_rfft_paths[1]) 
-    #converting to array of Float64
-    sampling_freq_arr = rfftfreq(2*length(aux_rfft))
-    freq_arr = convert.(Float64,sampling_freq_arr)
+function sampling_freq_arr(file_paths :: AbstractArray) :: Array{Float64,1}
+    aux_file_path = file_paths[1]
+    freq_arr = []
 
-    deleteat!(freq_arr,length(freq_arr)) #lastest entry gets discarted 
-    replace!(x -> iszero(x) ? 1.0e-16 : x, freq_arr ) #zero values are substituted by a very small non-zero value 
+    open(aux_file_path,"r+") do io
+        num_lines = countlines(io)
+        #converting to Array{Float64} to be able to use deleteat!
+        sampling_freq_arr = rfftfreq(num_lines)
+        freq_arr = convert.(Float64,sampling_freq_arr) 
+
+        deleteat!(freq_arr,1)
+    end     
     return freq_arr
 end
 
@@ -88,24 +92,36 @@ function get_str_dashed_temp(str_rfft_path :: AbstractString) :: AbstractString
     return str_dashed_temp
 end
 
-
 #= 
 Module method for plotting psd wuth options to plot a psd providing one generic 
 under which all psd will be saved. 
 
 NOTE: the path to the rfft .txt file need to be absulute 
 =#
+
 function plot_psd(str_rfft_path :: AbstractString, destination_dir :: AbstractString, run :: Int)
+    #auxiliar defs
     curr_dir = pwd()
     full_file_path = destination_dir
-    #array of sampling frequencies
-    f = sampling_freq_arr(str_rfft_path)
+    rel_path_sub_dir = ["magnetization","global_magnetization_r$run.txt"]
 
+    #= abs path to the .txt file with the magnetization time series =# 
+    sub_dirs_array = splitpath(str_rfft_path) #array containing all subdirs in str_rfft_path
+    deleteat!(sub_dirs_array,length(sub_dirs_array) - 1 : length(sub_dirs_array))
+    #array containing all subdirs included in the abs path the .txt with the magnetization time series
+    append!(sub_dirs_array,rel_path_sub_dir) 
+    magn_ts_abs_path = joinpath(sub_dirs_array) #path 
+
+    #array of sampling frequencies
+    f = sampling_freq_arr(magn_ts_abs_path)
+    
     rfft = utilities.get_array_from_txt(Complex{Float64},str_rfft_path) #rfft of the M_n with initial temperature x_y_z
+    deleteat!(rfft,(1,length(rfft))) #discarting the DC associated entry and the last element array 
+   
     rfft = convert.(ComplexF64,rfft) #casting array to ComplexF64
     
     psd = fourierAnalysis.compute_psd(rfft) #array with the psd THE RFFT[M_n]
-    
+   
     #string manipulations
     str_dashed_temp = get_str_dashed_temp(str_rfft_path)
     full_file_path *= "psd_$(str_dashed_temp)_r$(run).pdf" 
@@ -119,7 +135,7 @@ function plot_psd(str_rfft_path :: AbstractString, destination_dir :: AbstractSt
     ylabel!("power density spectrum")
 
     #= file saving  =#
-    savefig(plt, full_file_path)        
+    savefig(plt, full_file_path)
 end
 
 #= 
