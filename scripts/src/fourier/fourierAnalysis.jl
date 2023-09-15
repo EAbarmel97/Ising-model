@@ -192,7 +192,7 @@ function plot_psd(str_rfft_paths :: AbstractArray, destination_dir :: AbstractSt
     savefig(plt, full_file_path)    
 end
 
-function mean_psd(rfft_paths :: AbstractArray) :: Float64
+function mean_psd(rfft_paths :: AbstractArray) :: Array{Float64,1}
     sum = zeros(length(rfft_paths))
     for i in eachindex(rfft_paths)
         rfft = utilities.get_array_from_txt(ComplexF64,rfft_paths[i])
