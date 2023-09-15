@@ -24,7 +24,7 @@ function write_rfft(arr :: Array{ComplexF64,1}, destination_dir :: AbstractStrin
     at_temp :: Float64, run :: Int)
     rounded_temp = round(at_temp, digits=2)
     str_rounded_temp = replace("$rounded_temp","." => "_")
-    file_name = "$destination_dir/rfft_global_magnetization_$(str_rounded_temp)_$run.txt"
+    file_name = "$destination_dir/rfft_global_magnetization_$(str_rounded_temp)_r$run.txt"
 
     #if file doesn't exist 
     if !isfile(file_name)    
@@ -190,5 +190,16 @@ function plot_psd(str_rfft_paths :: AbstractArray, destination_dir :: AbstractSt
 
     #= file saving  =#
     savefig(plt, full_file_path)    
+end
+
+function mean_psd(rfft_paths :: AbstractArray) :: Float64
+    sum = zeros(length(rfft_paths))
+    for i in eachindex(rfft_paths)
+        rfft = utilities.get_array_from_txt(ComplexF64,rfft_paths[i])
+        rfft = convert.(ComplexF64,rfft)
+        psd = compute_psd(rfft)
+        sum += psd    
+    end
+    return sum/length(rfft_paths)
 end
 end #end of module 
