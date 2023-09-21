@@ -57,6 +57,8 @@ for run in 1:NUM_RUNS
         push!(RFFT_FULL_PATHS,rftt_full_path)
         fourierAnalysis.plot_psd(rftt_full_path,AUTOMATED_PSD_GRAPHS,run)
     end 
+
+    fourierAnalysis.plot_psd(RFFT_FULL_PATHS,AUTOMATED_PSD_GRAPHS,run)
 end
     
 
