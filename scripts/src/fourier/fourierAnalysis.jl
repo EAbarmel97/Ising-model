@@ -101,7 +101,6 @@ NOTE: the path to the rfft .txt file need to be absulute
 
 function plot_psd(str_rfft_path :: AbstractString, destination_dir :: AbstractString, run :: Int)
     #auxiliar defs
-    curr_dir = pwd()
     full_file_path = destination_dir
     rel_path_sub_dir = ["magnetization","global_magnetization_r$run.txt"]
 
@@ -138,21 +137,31 @@ function plot_psd(str_rfft_path :: AbstractString, destination_dir :: AbstractSt
     savefig(plt, full_file_path)
 end
 
+function mean_psd(rfft_paths :: AbstractArray) :: Array{Float64,1}
+    sum = zeros(length(rfft_paths))
+    for i in eachindex(rfft_paths)
+        rfft = utilities.get_array_from_txt(ComplexF64,rfft_paths[i])
+        rfft = convert.(ComplexF64,rfft)
+        psd = compute_psd(rfft)
+        sum += psd    
+    end
+    return sum/length(rfft_paths)
+end
+
 #= 
 Module method for plotting psd wuth options to plot several psd on the same canvas, providing one generic 
-    under which all psd will be saved. 
+under which all psd will be saved. 
     
-    NOTE: the paths to the rffts .txt files need to be absulute path/s 
-    =#
-    function plot_psd(str_rfft_paths :: AbstractArray, destination_dir :: AbstractString, run :: Int )
-        curr_dir = pwd()
-        full_file_path = destination_dir
-        rel_path_sub_dir = ["magnetization","global_magnetization_r$run.txt"]
-        
-        #auxiliar arrays
-        str_dashed_temp_array = []
-        str_temp_array = []
-        psd_array = []
+NOTE: the paths to the rffts .txt files need to be absulute path/s 
+=#
+function plot_psd(str_rfft_paths :: AbstractArray, destination_dir :: AbstractString, run :: Int )
+    full_file_path = destination_dir
+    
+    #auxiliar arrays
+    rel_path_sub_dir = ["magnetization","global_magnetization_r$run.txt"]
+    str_dashed_temp_array = []
+    str_temp_array = []
+    psd_array = []
 
     for i in eachindex(str_rfft_paths)
         str_rfft_path = str_rfft_paths[i]
@@ -185,7 +194,7 @@ Module method for plotting psd wuth options to plot several psd on the same canv
         push!(str_temp_array,str_temp)
     end    
 
-    #= abs path to the .txt file with the magnetization time series =# 
+    #= abs path to the first  .txt file with the magnetization time series =# 
     sub_dirs_array = splitpath(str_rfft_paths[1]) #array containing all subdirs in str_rfft_path
     deleteat!(sub_dirs_array,length(sub_dirs_array) - 1 : length(sub_dirs_array))
     #array containing all subdirs included in the abs path the .txt with the magnetization time series
@@ -194,7 +203,7 @@ Module method for plotting psd wuth options to plot several psd on the same canv
 
     #sampling frecuencies
     f = sampling_freq_arr(magn_ts_abs_path)
-    
+
     #= plot styling =#
     plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false,xscale=:log10,yscale=:log10) #plot reference 
     
@@ -205,16 +214,5 @@ Module method for plotting psd wuth options to plot several psd on the same canv
 
     #= file saving  =#
     savefig(plt, full_file_path)    
-end
-
-function mean_psd(rfft_paths :: AbstractArray) :: Array{Float64,1}
-    sum = zeros(length(rfft_paths))
-    for i in eachindex(rfft_paths)
-        rfft = utilities.get_array_from_txt(ComplexF64,rfft_paths[i])
-        rfft = convert.(ComplexF64,rfft)
-        psd = compute_psd(rfft)
-        sum += psd    
-    end
-    return sum/length(rfft_paths)
 end
 end #end of module 
