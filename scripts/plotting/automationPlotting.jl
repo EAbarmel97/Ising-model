@@ -7,8 +7,8 @@ using .fourierAnalysis: write_rfft
 
 #auxiliary file directory definitions
 const CURR_DIR = pwd()
-const AUTOMATED_SIMULS = CURR_DIR * "/all_simulations/automated/"
-const AUTOMATED_SIMULS_DIR_NAMES= readdir(AUTOMATED_SIMULS)
+const AUTOMATED_SIMULS = joinpath(CURR_DIR, "all_simulations/automated/")
+const AUTOMATED_SIMULS_DIR_NAMES = readdir(AUTOMATED_SIMULS)
 
 #= regex'es =# 
 rgx0 = r"T_0_\d{1,2}"
@@ -18,7 +18,7 @@ rgx3 = r"T_3_\d{1,2}"
 
 #= file manipulations =#
 touch("mean_magn_automated.txt") #creation of file containing all mean global magnetization
-file_to_write_over = CURR_DIR * "/mean_magn_automated.txt"
+file_to_write_over = joinpath(CURR_DIR, "mean_magn_automated.txt")
 
 #writing headers over file
 file = open("mean_magn_automated.txt","w+")

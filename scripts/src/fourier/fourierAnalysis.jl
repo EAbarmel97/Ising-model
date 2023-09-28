@@ -142,6 +142,8 @@ function mean_psd(rfft_paths :: AbstractArray) :: Array{Float64,1}
     for i in eachindex(rfft_paths)
         rfft = utilities.get_array_from_txt(ComplexF64,rfft_paths[i])
         rfft = convert.(ComplexF64,rfft)
+        deleteat!(rfft,(1,length(rfft))) #discarting the DC associated entry and the last element array 
+        
         psd = compute_psd(rfft)
         sum += psd    
     end
