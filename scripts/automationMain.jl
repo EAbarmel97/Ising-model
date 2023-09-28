@@ -163,7 +163,8 @@ function do_simulations(arr :: Array{Float64,1})
    end
 end
 
-#= if user wants to simulate with the default array of temperatures containing temps in the intervals
+#= 
+   if user wants to simulate with the default array of temperatures containing temps in the intervals
    a) 0.0 to 1.0 with increments of 0.1
    b) 1.0 to 2.2 with increments of 0.1 
    c) 2.2 to 2.5 with incremets of 0.01 

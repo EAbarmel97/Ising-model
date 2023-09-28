@@ -29,11 +29,15 @@ function save_traze(dir_to_save::AbstractString,
     savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
 end
 
-#= Function to write over file and plot the time series contained in each of the all_simulations subdirectories=#
-function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: AbstractString,
-    file_to_write :: AbstractString, rgx :: Regex)
+#= 
+Function to write over file and plot the time series contained in each of the all_simulations subdirectories 
+meeting a given regex
+=#
+#=function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: AbstractString,
+         file_to_write :: AbstractString, rgx :: Regex)
 
     curr_dir = pwd()
+
     GRAPHS_AUTOMATED_DIR = curr_dir * "/graphs/automated/"
     if !isdir(GRAPHS_AUTOMATED_DIR)
         mkpath(GRAPHS_AUTOMATED_DIR)
@@ -69,6 +73,62 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
 
         if isfile(aux_dir) #plot if file exists
             save_traze(aux_graph_full_name, aux_dir)
+        end
+    end  
+end =#
+
+#= Function to write over file and plot the time series contained in each of the all_simulations subdirectories 
+   meeting a given regex=#
+   function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: AbstractString,
+                    file_to_write :: AbstractString, rgx :: Regex)
+
+    curr_dir = pwd()
+
+    GRAPHS_AUTOMATED_DIR = curr_dir * "/graphs/automated/"
+    if !isdir(GRAPHS_AUTOMATED_DIR)
+        mkpath(GRAPHS_AUTOMATED_DIR)
+    end
+
+    #filtering all file names that match the given regex 
+    filtered_array = filter(str -> contains(str, rgx), dir_names)
+    
+    if isempty(filtered_array)
+        throw(exceptions.PlottingException("impossible to graph the given array of temperatures!"))
+    end     
+    
+
+    for i in eachindex(filtered_array)
+
+        mean_per_temp = 0 
+        num_runs = length(readdir(filtered_array[i])) #number of runs contained in a given simulations dir
+
+        for run in 1:num_runs
+            aux_dir = simuls_dir * "$(filtered_array[i])" * "/magnetization/global_magnetization_r$run.txt"
+            abs_mean_val = abs(utilities.mean_value(aux_dir))
+            mean_per_temp += abs_mean_val/num_runs #mean magnetization at a given temp 
+            str_mean_val = "$mean_per_temp"
+            
+            #appending mean value of the global magn time series
+            aux_dir_name = filtered_array[i]
+            aux_temp = replace(aux_dir_name, "simulations_T_" => "", "_" => ".") #getting the temperature
+            str_to_append = "$(aux_temp)," * str_mean_val * "\n"
+            mean_vals_file = open(file_to_write, "a+")
+            write(mean_vals_file, str_to_append) 
+            close(mean_vals_file)
+            
+            aux_graph_file_name = replace(aux_dir_name,"simulations_T_" => "magnetization_ts_")
+
+            mdpath(aux_temp)
+
+            if contains(aux_dir,"automated")
+                aux_graph_full_name = GRAPHS_AUTOMATED_DIR * aux_graph_file_name * ".pdf"
+            else
+                aux_graph_full_name = curr_dir * "/graphs/" * aux_graph_file_name * ".pdf"
+            end
+    
+            if isfile(aux_dir) #plot if file exists
+                save_traze(aux_graph_full_name, aux_dir)
+            end
         end
     end  
 end
