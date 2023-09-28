@@ -83,8 +83,9 @@ end =#
                     file_to_write :: AbstractString, rgx :: Regex)
 
     curr_dir = pwd()
+    GRAPHS_DIR =  joinpath(curr_dir * "graphs")
+    GRAPHS_AUTOMATED_DIR = joinpath(curr_dir , "graphs", "automated")
 
-    GRAPHS_AUTOMATED_DIR = curr_dir * "/graphs/automated/"
     if !isdir(GRAPHS_AUTOMATED_DIR)
         mkpath(GRAPHS_AUTOMATED_DIR)
     end
@@ -101,8 +102,19 @@ end =#
 
         mean_per_temp = 0 
         num_runs = length(readdir(filtered_array[i])) #number of runs contained in a given simulations dir
+        #creation of the sub dir that will be populated with graphs of magnetization times series at a given temp and run 
+        filtered_array_abs_path = abspath(filtered_array[i])
+        at_temp = replace(filtered_array[i],"simulations_" => "")
+        if contains(filtered_array_abs_path,"/automated/")
+            at_temp_dir = joinpath(GRAPHS_AUTOMATED_DIR, at_temp)
+            mkpath(at_temp_dir)
+        else
+            at_temp_dir = joinpath(GRAPHS_DIR, at_temp)
+            mkpath(at_temp_dir)   
+        end
 
         for run in 1:num_runs
+            #.txt magnetization time seris file at a given run
             aux_dir = simuls_dir * "$(filtered_array[i])" * "/magnetization/global_magnetization_r$run.txt"
             abs_mean_val = abs(utilities.mean_value(aux_dir))
             mean_per_temp += abs_mean_val/num_runs #mean magnetization at a given temp 
@@ -116,17 +128,18 @@ end =#
             write(mean_vals_file, str_to_append) 
             close(mean_vals_file)
             
+            #building the graph file name  
             aux_graph_file_name = replace(aux_dir_name,"simulations_T_" => "magnetization_ts_")
-
-            mdpath(aux_temp)
+            aux_graph_file_name *= "r$run.pdf"
 
             if contains(aux_dir,"automated")
-                aux_graph_full_name = GRAPHS_AUTOMATED_DIR * aux_graph_file_name * ".pdf"
+                aux_graph_full_name =  joinpath(GRAPHS_AUTOMATED_DIR, at_temp, aux_graph_file_name)
             else
-                aux_graph_full_name = curr_dir * "/graphs/" * aux_graph_file_name * ".pdf"
+                aux_graph_full_name = joinpath(GRAPHS_DIR, at_temp, aux_graph_file_name)
             end
     
             if isfile(aux_dir) #plot if file exists
+                #saves under a common sub dir all simulations with the same temperature
                 save_traze(aux_graph_full_name, aux_dir)
             end
         end
