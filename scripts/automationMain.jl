@@ -20,44 +20,30 @@ if !isdir(AUTOMATED_SIMULS_DIR)
    mkpath(AUTOMATED_SIMULS_DIR)
 end
 
-println("Provide initial and final temperatures. Ti < Tf")
+#Initial temperature
+const INIT_TEMP = utilities.parse_int_float64(Float64, ARGS[1])
 
-println()
-
-println("Initial temperature:")
-const INIT_TEMP = utilities.parse_int_float64(Float64, readline())
-
-println()
-
-println("Final temperature:")
-const FINAL_TEMP = utilities.parse_int_float64(Float64, readline())
+#Final temperature
+const FINAL_TEMP = utilities.parse_int_float64(Float64, ARGS[2])
 
 if FINAL_TEMP < INIT_TEMP 
    throw(exceptions.IlegalChoiceException("Ilegal  choice. Tf < Ti"))   
 end
 
-println()
+#Number of runs
+const NUM_RUNS = utilities.parse_int_float64(Int, ARGS[3])
 
-println("Number of runs:")
-const NUM_RUNS = utilities.parse_int_float64(Int, readline())
-
-println()
-
-println("Increment: ")
-const INCREMENT = utilities.parse_int_float64(Float64, readline())
+#Increment
+const INCREMENT = utilities.parse_int_float64(Float64, ARGS[4])
 
 #= number of different temperatures equaly spaced by given incrments, contained in the interval [Ti, Tf] =#
 const NUM_TEMPS = ceil(Int,(FINAL_TEMP - INIT_TEMP)/INCREMENT)
 
-println()
+#Grid size
+const N_GRID = utilities.parse_int_float64(Int, ARGS[5])
 
-println("Grid size")
-const N_GRID = utilities.parse_int_float64(Int, readline())
-
-println()
-
-println("Number of generations:")
-const NUM_GENERATIONS = utilities.parse_int_float64(Int, readline())
+#Number of generations
+const NUM_GENERATIONS = utilities.parse_int_float64(Int, ARGS[6])
 
 cd("all_simulations/automated") #going up in the working directory
 
@@ -163,21 +149,8 @@ function do_simulations(arr :: Array{Float64,1})
    end
 end
 
-#= 
-   if user wants to simulate with the default array of temperatures containing temps in the intervals
-   a) 0.0 to 1.0 with increments of 0.1
-   b) 1.0 to 2.2 with increments of 0.1 
-   c) 2.2 to 2.5 with incremets of 0.01 
-   d) 2.5 to 3.5 with increments of 0.1 
-=#
-
 function main()
-   println()
-   if utilities.use_temperature_array()
-      do_simulations(utilities.TEMPERATURE_INTERVALS)
-   else
-      do_simulations(NUM_TEMPS, INIT_TEMP, FINAL_TEMP)         
-   end
+   do_simulations(NUM_TEMPS, INIT_TEMP, FINAL_TEMP) 
 end
 
 main()
