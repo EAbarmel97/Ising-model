@@ -32,4 +32,4 @@ graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMU
 graphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS,file_to_write_over,rgx3)
 
 #= ploting mean magnetization vs temperature =#
-graphTrazes.plot_mean_magn("mean_magn_automated.txt", "mean_magn.pdf")
+graphTrazes.plot_mean_magn("mean_magn_automated.txt", "mean_magn_automated.pdf")
