@@ -4,7 +4,7 @@ using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, u
 using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 
 include("../scripts/src/utilities.jl")
-using .utilities: parse_int_float64, get_array_from_txt, parse_int_float64, push_arith_progression!
+using .utilities: parse_int_float64, get_array_from_txt, parse_int_float64, use_temperature_array, TEMPERATURE_INTERVALS
 
 const SIMULS_DIR = "all_simulations"
 
@@ -50,13 +50,13 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
 
    #= aux_dir = "../scripts/simulations_T_" * str_temp #folder containing simulations al temp str_temp  =#
    aux_dir = CURR_DIR * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
-   FOURIER_DIR = aux_dir * "/fourier"
+   FOURIER_DIR = joinpath(aux_dir,"fourier")
    
    mkpath(aux_dir) #creates simulation folder
    mkpath(FOURIER_DIR)
 
    #= Global magnetization time series realization will be saved on subdirectories over folder simultations=#
-   global_magnetization_aux_dir = aux_dir * "/magnetization"
+   global_magnetization_aux_dir = joinpath(aux_dir, "magnetization") 
    mkpath(global_magnetization_aux_dir)
 
    #= Subdirectory containg a .txt file with the unicode representation of how the spin grid evolves with each generation at each run =#
@@ -88,7 +88,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
       write(generic_spin_grid_file, "$(stringified_grid_spin)")
       close(generic_spin_grid_file)
 
-      for generation in 1:(NUM_GENERATIONS -1 )
+      for generation in 1:NUM_GENERATIONS
          isingMethods.do_generation(ising_model)
          setfield!(ising_model, :cur_gen, generation)
 
@@ -100,36 +100,64 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
          stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
          write(generic_spin_grid_file, "$(stringified_grid_spin)\n") #spin grid observation at generation i 
          close(generic_spin_grid_file)
-      end
-      # GENERATION == NUM_GENERATIONS
-      isingMethods.do_generation(ising_model)
-      setfield!(ising_model, :cur_gen, NUM_GENERATIONS)
 
-      generic_magnetization_file = open(generic_magnetization_file_name, "a+")
-      write(generic_magnetization_file, "$(ising_model.global_magnetization)") #global magnetization observation at generation i 
-      close(generic_magnetization_file)
-
-      generic_spin_grid_file = open(generic_spin_grid_file_name, "a+")
-      stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-      write(generic_spin_grid_file, "$(stringified_grid_spin)") #spin grid observation at generation i 
-      close(generic_spin_grid_file)
+         if generation == NUM_GENERATIONS
+            isingMethods.do_generation(ising_model)
+            setfield!(ising_model, :cur_gen, NUM_GENERATIONS)
+      
+            generic_magnetization_file = open(generic_magnetization_file_name, "a+")
+            write(generic_magnetization_file, "$(ising_model.global_magnetization)") #global magnetization observation at generation i 
+            close(generic_magnetization_file)
+      
+            generic_spin_grid_file = open(generic_spin_grid_file_name, "a+")
+            stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
+            write(generic_spin_grid_file, "$(stringified_grid_spin)") #spin grid observation at generation i 
+            close(generic_spin_grid_file)       
+         end
+      end     
    end
 end
 
+
+function do_simulations(arr :: Array{Float64,1})
+   for i in eachindex(arr)
+      #= random initial temperature on the interval [-1 ,1] =#
+      rand_magn = rand()*2 - 1 
+      
+      #= temperature increments in arithmetic progression  =#
+      temp = arr[i]
+
+      do_model(rand_magn, temp, N_GRID) 
+   end
+end
+
+#= 
+   if user wants to simulate with the default array of temperatures containing temps in the intervals
+   a) 0.0 to 1.0 with increments of 0.1
+   b) 1.0 to 2.2 with increments of 0.1 
+   c) 2.2 to 2.5 with incremets of 0.01 
+   d) 2.5 to 3.5 with increments of 0.1 
+=#
+
 function main()
-   for i in 1:NUM_TEMPS
-      println("Initial magnetization")
-      INIT_MAGN = utilities.parse_int_float64(Float64, readline())
-
-      println()
-
-      println("Initial temperature")
-      TEMP = utilities.parse_int_float64(Float64, readline())
-
-      println()
-
-      do_model(INIT_MAGN, TEMP, N_GRID)
-   end   
-end 
+   println()
+   if utilities.use_temperature_array()
+      do_simulations(utilities.TEMPERATURE_INTERVALS)
+   else
+      for i in 1:NUM_TEMPS
+         println("Initial magnetization")
+         INIT_MAGN = utilities.parse_int_float64(Float64, readline())
+   
+         println()
+   
+         println("Initial temperature")
+         TEMP = utilities.parse_int_float64(Float64, readline())
+   
+         println()
+   
+         do_model(INIT_MAGN, TEMP, N_GRID)
+      end
+   end     
+end
 
 main()

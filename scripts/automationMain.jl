@@ -7,14 +7,14 @@ using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, u
 using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 
 include("../scripts/src/utilities.jl")
-using .utilities: parse_int_float64, get_array_from_txt, use_temperature_array, TEMPERATURE_INTERVALS
+using .utilities: parse_int_float64, get_array_from_txt
 
 include("../scripts/src/exceptions.jl")
 using .exceptions: IlegalChoiceException
 
 
 const SIMULS_DIR = "all_simulations"
-const AUTOMATED_SIMULS_DIR = SIMULS_DIR * "/automated"
+const AUTOMATED_SIMULS_DIR = joinpath(SIMULS_DIR, "automated")
 
 if !isdir(AUTOMATED_SIMULS_DIR)
    mkpath(AUTOMATED_SIMULS_DIR)
@@ -62,28 +62,24 @@ const NUM_GENERATIONS = utilities.parse_int_float64(Int, readline())
 cd("all_simulations/automated") #going up in the working directory
 
 const CURR_DIR = pwd()
+println()
 println("saving simulations under dir: $CURR_DIR")
 
 function do_model(INIT_MAGN, TEMP, N_GRID)
    ising_model = isingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
-
    ising_model.flip_strategy = isingMethods.RANDOM_STRATEGY
    ising_model.trans_dynamics = isingMethods.METROPOLIS_DYNAMICS
    
    ROUNDED_TEMP = round(TEMP, digits=2)
    str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
    aux_dir =  CURR_DIR * "/simulations_T_" * str_temp #folder containing simulations al temp str_temp 
-   FOURIER_AUTOMATED_DIR = aux_dir * "/fourier"
+   FOURIER_AUTOMATED_DIR = joinpath(aux_dir, "fourier")
    mkpath(aux_dir) #creates simulation folder
    mkpath(FOURIER_AUTOMATED_DIR)  
 
    #= Global magnetization time series realization will be saved on subdirectories over folder simultations=#
    global_magnetization_aux_dir = aux_dir * "/magnetization"
    mkpath(global_magnetization_aux_dir)
-
-   #= Subdirectory containg a .txt file with the unicode representation of how the spin grid evolves with each generation at each run =#
-   grid_evolution_aux_dir = aux_dir * "/grid_evolution"
-   mkpath(grid_evolution_aux_dir)
 
    for run in 1:NUM_RUNS
       isingMethods.reset_stats(ising_model)
@@ -95,20 +91,10 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
       generic_magnetization_file_name = global_magnetization_aux_dir * "/global_magnetization_r$(run)" * ".txt"
       touch("$generic_magnetization_file_name")
 
-      #= Creation of generic .txt files containing snapshots of the spin grid evolution at each generation =#
-      generic_spin_grid_file_name = grid_evolution_aux_dir * "/grid_evolution_r$(run)" * ".txt"
-      touch("$generic_spin_grid_file_name")
-
       #= Initial observations of the global magnetizaton are saved to their respective .txt files=#
       generic_magnetization_file = open(generic_magnetization_file_name, "w+")
       write(generic_magnetization_file, "$(ising_model.global_magnetization)\n") #initial observation
       close(generic_magnetization_file)
-
-      #= Initial spin grid state =#
-      generic_spin_grid_file = open(generic_spin_grid_file_name, "w+")
-      stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-      write(generic_spin_grid_file, "$(stringified_grid_spin)")
-      close(generic_spin_grid_file)
 
       for generation in 1:NUM_GENERATIONS
          isingMethods.do_generation(ising_model)
@@ -118,26 +104,15 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
          write(generic_magnetization_file, "$(ising_model.global_magnetization)\n") #global magnetization observation at generation i 
          close(generic_magnetization_file)
 
-         generic_spin_grid_file = open(generic_spin_grid_file_name, "a+")
-         stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-         write(generic_spin_grid_file, "$(stringified_grid_spin)\n") #spin grid observation at generation i 
-         close(generic_spin_grid_file)
-         
-         #at the last generation there are no line breaks 
          if generation == NUM_GENERATIONS
             isingMethods.do_generation(ising_model)
             setfield!(ising_model, :cur_gen, generation)
 
             generic_magnetization_file = open(generic_magnetization_file_name, "a+")
-            write(generic_magnetization_file, "$(ising_model.global_magnetization)") #global magnetization observation at the last generation
+            write(generic_magnetization_file, "$(ising_model.global_magnetization)") #global magnetization observation at generation i 
             close(generic_magnetization_file)
-
-            generic_spin_grid_file = open(generic_spin_grid_file_name, "a+")
-            stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-            write(generic_spin_grid_file, "$(stringified_grid_spin)") #spin grid observation at the last generation
-            close(generic_spin_grid_file)
-         end   
-      end
+         end
+      end      
    end
 end
 
@@ -154,33 +129,8 @@ function do_simulations(num_temps :: Int, init_temp, final_temp)
    end   
 end
 
-function do_simulations(arr :: Array{Float64,1})
-   for i in eachindex(arr)
-      #= random initial temperature on the interval [-1 ,1] =#
-      rand_magn = rand()*2 - 1 
-      
-      #= temperature increments in arithmetic progression  =#
-      temp = arr[i]
-
-      do_model(rand_magn, temp, N_GRID) 
-   end
-end
-
-#= 
-   if user wants to simulate with the default array of temperatures containing temps in the intervals
-   a) 0.0 to 1.0 with increments of 0.1
-   b) 1.0 to 2.2 with increments of 0.1 
-   c) 2.2 to 2.5 with incremets of 0.01 
-   d) 2.5 to 3.5 with increments of 0.1 
-=#
-
 function main()
-   println()
-   if utilities.use_temperature_array()
-      do_simulations(utilities.TEMPERATURE_INTERVALS)
-   else
-      do_simulations(NUM_TEMPS, INIT_TEMP, FINAL_TEMP)         
-   end
+   do_simulations(NUM_TEMPS, INIT_TEMP, FINAL_TEMP) 
 end
 
 main()
