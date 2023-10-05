@@ -1,3 +1,6 @@
+using Random
+Random.seed!(1234)
+
 include("../scripts/src/isingMethods.jl")
 using .isingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
 using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization, randomize, set_magnetization
@@ -14,26 +17,31 @@ end
 
 println()
 
-println("Number of different temperature to simulate")
+println("Number of different temperature to simulate\n")
 const NUM_TEMPS = utilities.parse_int_float64(Int, readline())
 
-println("Number of runs")
+println()
+
+println("Number of runs\n")
 const NUM_RUNS = utilities.parse_int_float64(Int, readline())
 
 println()
 
-println("Number of generations")
+println("Number of generations\n")
 const NUM_GENERATIONS = utilities.parse_int_float64(Int, readline())
 
 println()
 
-println("Grid size")
+println("Grid size\n")
 const N_GRID = utilities.parse_int_float64(Int, readline())
 
 cd("all_simulations") #going up in the working directory
 
 const CURR_DIR = pwd()
-println("saving simulations under dir: $CURR_DIR") 
+
+println()
+
+println("saving simulations under dir: $CURR_DIR\n") 
 
 function do_model(INIT_MAGN, TEMP, N_GRID)
    ising_model = isingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
@@ -106,18 +114,17 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
             setfield!(ising_model, :cur_gen, NUM_GENERATIONS)
       
             generic_magnetization_file = open(generic_magnetization_file_name, "a+")
-            write(generic_magnetization_file, "$(ising_model.global_magnetization)") #global magnetization observation at generation i 
+            write(generic_magnetization_file, "$(ising_model.global_magnetization)") #global magnetization observation at the last generation
             close(generic_magnetization_file)
       
             generic_spin_grid_file = open(generic_spin_grid_file_name, "a+")
             stringified_grid_spin = isingMethods.display(ising_model, ising_model.cur_gen)
-            write(generic_spin_grid_file, "$(stringified_grid_spin)") #spin grid observation at generation i 
-            close(generic_spin_grid_file)       
+            write(generic_spin_grid_file, "$(stringified_grid_spin)") #spin grid observation at the last generation
+            close(generic_spin_grid_file)  
          end
       end     
    end
 end
-
 
 function do_simulations(arr :: Array{Float64,1})
    for i in eachindex(arr)
@@ -145,6 +152,8 @@ function main()
       do_simulations(utilities.TEMPERATURE_INTERVALS)
    else
       for i in 1:NUM_TEMPS
+         println()
+
          println("Initial magnetization")
          INIT_MAGN = utilities.parse_int_float64(Float64, readline())
    

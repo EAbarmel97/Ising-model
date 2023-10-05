@@ -45,8 +45,7 @@ end
 
 #= Function to match user input =#
 function use_temperature_array() :: Bool
-    println()
-    print("use temperature array?: [y/n]")
+    print("use temperature array?: [y/n]\t")
     usr_input = lowercase(readline())
     
     while true
