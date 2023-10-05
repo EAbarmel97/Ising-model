@@ -7,7 +7,7 @@ using .fourierAnalysis: write_rfft
 
 #auxiliary file directory definitions
 const CURR_DIR = pwd()
-const AUTOMATED_SIMULS = joinpath(CURR_DIR, "all_simulations/automated/")
+const AUTOMATED_SIMULS = joinpath(CURR_DIR, "all_simulations","automated/")
 const AUTOMATED_SIMULS_DIR_NAMES = readdir(AUTOMATED_SIMULS)
 
 #= regex'es =# 

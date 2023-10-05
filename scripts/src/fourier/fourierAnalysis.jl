@@ -106,17 +106,17 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
         simuls_dir = joinpath(curr_dir,"all_simulations") 
     end
 
-    dashed_str_temp = replace(temp_name_dir, "simulations_T_" => "")
+    dashed_str_temp = replace(temp_name_dir, "simulations_" => "")
     at_temp = joinpath(curr_dir,destination_dir,dashed_str_temp) # subdir ../graphs/automated/psd/T_x_y_z or ../graphs/psd/T_x_y_z
     mkpath(at_temp) #sub dir graphs/psd/T_x_y_z
     
     rffts_at_temp = joinpath(simuls_dir,temp_name_dir,"fourier")
     rffts_file_names = readdir(rffts_at_temp) #names of the rffts .txt file saved under the dir ../fourier/
 
-    num_runs = length(readdir(rffts_at_temp))
-    for run in 1:num_runs
+    NUM_RUNS = length(readdir(rffts_at_temp))
+    for run in 1:NUM_RUNS
         rfft_file_name = rffts_file_names[run]
-        rfft_path = joinpath(rffts_at_temp,rfft_file_name)#path to the strigified file  for the rfft 
+        rfft_path = joinpath(rffts_at_temp,rfft_file_name)#abs path to the strigified file  for the rfft 
 
         #fetching and appending psd to the array containg the power spectra densities
         rfft = utilities.get_array_from_txt(Complex{Float64},rfft_path) #rfft of the M_n with initial temperature x_y_z
@@ -132,7 +132,7 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
 
     #string manipulations
     magn_dir_at_temp = joinpath(simuls_dir,temp_name_dir,"magnetization")
-    #all magnetization  time series files have the number of lines, so the first is picked up
+    #all magnetization time series files have the number of lines, so the first file is picked up
     magn_file_name = readdir(magn_dir_at_temp)[1]
     magn_ts_abs_path = joinpath(magn_dir_at_temp,magn_file_name)
     
@@ -141,12 +141,13 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
 
     #plot styling
     plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false,xscale=:log10,yscale=:log10) #plot reference 
-    title!("PSD for ts with init temp from ")
+    str_temp = replace(dashed_str_temp,"_" => ".")
+    title!("PSD for ts with init temp $(str_temp)")
     xlabel!(L"f")
     ylabel!("power density spectra")
 
     #file saving
-    full_file_path = joinpath(at_temp,"psd_T_$(dashed_str_temp)_r1_$(num_runs).pdf" )
+    full_file_path = joinpath(at_temp,"psd_$(dashed_str_temp)_r1_$(NUM_RUNS).pdf" )
     savefig(plt, full_file_path)    
 end
 end #end of module 
