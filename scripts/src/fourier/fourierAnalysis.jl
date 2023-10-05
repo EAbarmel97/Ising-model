@@ -69,22 +69,6 @@ function sampling_freq_arr(file_path :: AbstractString) :: Array{Float64,1}
     return freq_arr
 end
 
-#= function that returns the stringified temperature but with "_" as a separator =#
-function get_str_dashed_temp(str_rfft_path :: AbstractString) :: AbstractString
-    curr_dir = pwd()
-    #replacement dictionary
-    replace_dict = Dict(curr_dir => "","/all_simulations/automated/simulations_T_" => "","/all_simulations/simulations_T_" => "",
-                                       r"/fourier/rfft_global_magnetization_\d{1}_\d{1,2}_\d{1}.txt" => "")
-
-    if contains(str_rfft_path,r"/all_simulations/automated/")
-        str_dashed_temp = utilities.replace_with_dict(str_rfft_path, replace_dict)
-    else
-        str_dashed_temp = utilities.replace_with_dict(str_rfft_path, replace_dict)
-    end
-
-    return str_dashed_temp
-end
-
 function mean_psd(psd_array :: Array{Array{Float64,1},1}) :: Array{Float64,1}
     sum = zeros(length(psd_array[1]))
     for i in eachindex(psd_array)

@@ -55,6 +55,8 @@ for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
     
     #plotting the power density spectra
     fourierAnalysis.plot_psd(simul_dir_name,AUTOMATED_PSD_GRAPHS)
+
+    #= TO DO: implement logic to obtain the order coefficient β =#
 end
 
     
