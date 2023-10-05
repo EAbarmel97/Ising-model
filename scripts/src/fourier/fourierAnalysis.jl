@@ -69,6 +69,7 @@ function sampling_freq_arr(file_path :: AbstractString) :: Array{Float64,1}
     return freq_arr
 end
 
+#= method to take the average psd when array of psd at different runs is given =#
 function mean_psd(psd_array :: Array{Array{Float64,1},1}) :: Array{Float64,1}
     sum = zeros(length(psd_array[1]))
     for i in eachindex(psd_array)
