@@ -5,6 +5,9 @@ using FFTW
 using Plots
 using LaTeXStrings
 
+include("../ising.jl")
+using .ising: CRITICAL_TEMP
+
 include("../utilities.jl")
 using .utilities: get_array_from_txt
 
@@ -22,9 +25,15 @@ end
 #= Function to write over a .txt file a vector with the rfft of a signal(time series) =#
 function write_rfft(arr :: Array{ComplexF64,1}, destination_dir :: AbstractString, 
     at_temp :: Float64, run :: Int)
-    rounded_temp = round(at_temp, digits=2)
-    str_rounded_temp = replace("$rounded_temp","." => "_")
-    file_name = "$destination_dir/rfft_global_magnetization_$(str_rounded_temp)_r$run.txt"
+
+    if at_temp != ising.CRITICAL_TEMP    
+        rounded_temp = round(at_temp, digits=2)
+        str_rounded_temp = replace("$rounded_temp","." => "_")
+        file_name = "$destination_dir/rfft_global_magnetization_$(str_rounded_temp)_r$run.txt"
+    else
+        str_Tc_temp = replace("$at_temp","$(ising.CRITICAL_TEMP)" => "Tc",)
+        file_name = "$destination_dir/rfft_global_magnetization_$(str_Tc_temp)_r$run.txt"
+    end
 
     #if file doesn't exist 
     if !isfile(file_name)    
