@@ -146,13 +146,13 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
     
     plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,lc=:red)
 
-    plot!((x) -> exp10(params[1] + params[2]*x),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+    plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
     
     str_temp = replace(dashed_str_temp,"T_" => "","_" => ".")
     title!("PSD for ts with init temp $(str_temp)")
     xlabel!(L"f")
     ylabel!("power density spectra")
-
+    
     #file saving
     full_file_path = joinpath(at_temp,"psd_$(dashed_str_temp)_r1_$(NUM_RUNS).pdf")
     savefig(plt, full_file_path)

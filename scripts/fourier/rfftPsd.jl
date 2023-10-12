@@ -33,6 +33,7 @@ for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
         global magnetization with initial temperature T_x_y_z s is under the directory 
         ../automated/simulations_T_x_y_z/magnetization/global_magnetization_rW.txt 
         =#
+        
         global_magn_ts_path = joinpath(ALL_GLOBAL_MAGN_DIRS[i],readdir(ALL_GLOBAL_MAGN_DIRS[i])[run])
         #temperature is taken from simulations dir name 
         str_temp = replace(simul_dir_name,"simulations_T_" => "", "_" => ".")
