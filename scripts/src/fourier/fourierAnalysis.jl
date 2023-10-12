@@ -79,6 +79,10 @@ function mean_psd(psd_array :: Array{Array{Float64,1},1}) :: Array{Float64,1}
     return sum/length(psd_array)
 end
 
+function intercept_and_order_coef(x::Array{Float64,1},y::Array{Float64,1})::Array{Float64,1}
+    X = hcat(ones(length(x)),x)
+    return inv(X'*X)*(X'*y)
+end
 #= 
 Module method for plotting psd wuth options to plot several psd on the same canvas, providing one generic 
 under which all psd will be saved. 
@@ -132,13 +136,18 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
     #sampling frecuencies
     f = sampling_freq_arr(magn_ts_abs_path)
 
-    #plot styling
-    plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false,
-                        xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
-    
-    plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false,
-                        xscale=:log10, yscale=:log10,lc=:red) 
+    log10_f = log10.(f)
+    log10_mean_psd = log10.(average_psd)
+    beta0, beta1 = intercept_and_order_coef(log10_f,log10_mean_psd)
+    params = [beta0,beta1]
 
+    #plot styling
+    plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
+    
+    plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,lc=:red)
+
+    plot!((x) -> exp10(params[1] + params[2]*x),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+    
     str_temp = replace(dashed_str_temp,"T_" => "","_" => ".")
     title!("PSD for ts with init temp $(str_temp)")
     xlabel!(L"f")

@@ -58,11 +58,3 @@ for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
 
     #= TO DO: implement logic to obtain the order coefficient β =#
 end
-
-    
-
-
-
-
-
-   
