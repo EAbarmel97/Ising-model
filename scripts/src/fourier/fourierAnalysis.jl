@@ -122,7 +122,6 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
     end
     
     average_psd = mean_psd(psd_array) #mean psd
-    push!(psd_array,average_psd) 
 
     #string manipulations
     magn_dir_at_temp = joinpath(simuls_dir,temp_name_dir,"magnetization")
@@ -136,6 +135,10 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
     #plot styling
     plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false,
                         xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
+    
+    plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false,
+                        xscale=:log10, yscale=:log10,lc=:red) 
+
     str_temp = replace(dashed_str_temp,"T_" => "","_" => ".")
     title!("PSD for ts with init temp $(str_temp)")
     xlabel!(L"f")

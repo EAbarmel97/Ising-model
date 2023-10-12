@@ -1,5 +1,9 @@
 module utilities
 export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS, replace_with_dict
+export median_value
+
+using  Statistics
+
 include("../src/ising.jl")
 using .ising: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
 
@@ -134,6 +138,11 @@ function mean_value(file_path::AbstractString, prune_first_N=0::Int):: Float64
         sum += time_series[i]
     end
     return sum /= length(time_series)
+end
+
+function median_value(file_path::AbstractString, prune_first_N=0::Int):: Float64
+    time_series = get_array_from_txt(file_path,prune_first_N)
+    return median(time_series)
 end
 
 #= Function to push fill in values in arithmetic progression on an array given the end points=#
