@@ -83,11 +83,17 @@ function intercept_and_order_coef(x::Array{Float64,1},y::Array{Float64,1})::Arra
     X = hcat(ones(length(x)),x)
     return inv(X'*X)*(X'*y)
 end
+
+function intercept_and_order_coef_from_log_psd(f::Array{Float64,4},average_psd::Array{Float64,1})::Array{Float64,1}
+    log10_f = log10.(f)
+    log10_mean_psd = log10.(average_psd)
+    beta0, beta1 = intercept_and_order_coef(log10_f,log10_mean_psd)
+    return [beta0,beta1]
+end
+
 #= 
 Module method for plotting psd wuth options to plot several psd on the same canvas, providing one generic 
 under which all psd will be saved. 
-    
-NOTE: the paths to the rffts .txt files need to be absulute path/s 
 =#
 function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractString)
     
@@ -133,14 +139,9 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
     magn_file_name = readdir(magn_dir_at_temp)[1]
     magn_ts_abs_path = joinpath(magn_dir_at_temp,magn_file_name)
     
-    #sampling frecuencies
     f = sampling_freq_arr(magn_ts_abs_path)
-
-    log10_f = log10.(f)
-    log10_mean_psd = log10.(average_psd)
-    beta0, beta1 = intercept_and_order_coef(log10_f,log10_mean_psd)
-    params = [beta0,beta1]
-
+    params = intercept_and_order_coef_from_log_psd(f,average_psd)
+    
     #plot styling
     plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
     
