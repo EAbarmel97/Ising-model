@@ -1,0 +1,66 @@
+module IsingModel
+export do_simulations
+
+include("ising.jl")
+using .isingModel: isingModel
+
+include("isingMethods.jl")
+using .isingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
+using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization,update_ising_model ,randomize, set_magnetization
+using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
+
+include("fourier/fourierAnalysis.jl")
+
+include("utilities.jl")
+
+
+function do_model(init_magn::Float64, temp::Float64, n_grid::Float64, write_evol_array::Bool=false)
+    
+    utilities.create_automated_simulations_dir_if_not_exists()
+    
+    ising_model = isingMethods.isingModel(temp, n_grid) #ising model struct instantiation
+    
+    ising_model.flip_strategy = isingMethods.RANDOM_STRATEGY
+    ising_model.trans_dynamics = isingMethods.METROPOLIS_DYNAMICS
+    
+    simulations_dir = utilities.create_simulation_dir(temp)
+    
+    fourier_dir = utilities.create_fourier_dir(simulations_dir)
+    magnetization_dir = utilities.create_magnetization_dir(simulations_dir)
+    
+    for run in 1:ARGS[3]
+        isingMethods.update_ising_model(ising_model,init_magn)
+        
+        magnetization_file_path = utilities.create_magnetization_time_series_file(magnetization_dir,"global_magnetization_r$(run).txt")
+        isingMethods.write_ising_model_prop_initial_state_over_file(ising_model,magnetization_file_path,:global_magnetization)
+             
+        for generation in 1:ARGS[6]
+            isingMethods.do_generation_and_write_ising_model_prop_over_file(ising_model, magnetization_file_path,:global_magnetization,generation)
+            
+            if write_evol_array
+                isingMethods.write_ising_model_sprin_grid(ising_model,generic_magnetization_file_name, generation)
+            end     
+        end
+    end
+end
+
+#= do_model function wrapper to make simulations of the ising model at different temperatures =#
+function do_simulations(ARGS::Array{Union{Int64,Float64},1})
+    
+    if ARGS[2] < ARGS[1]
+        throw(exceptions.IlegalChoiceException("Ilegal  choice. Tf < Ti"))   
+    end
+
+    #= number of different temperatures equaly spaced by given incrments, contained in the interval [Ti, Tf] =#
+    num_temps = ceil(Int,(ARGS[1] - ARGS[1])/ARGS[4])
+    for i in 0:num_temps
+        #= random initial temperature on the interval [-1 ,1] =#
+        rand_magn = rand()*2 - 1 
+            
+        #= temperature increments in arithmetic porgression  =#
+        temp = ARGS[1] + (i/num_temps)*(ARGS[2]- ARGS[1])
+            
+        do_model(rand_magn, temp, ARGS[5]) 
+    end   
+end
+end #end of module

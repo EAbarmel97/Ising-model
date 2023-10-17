@@ -1,6 +1,6 @@
 module utilities
 export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS, replace_with_dict
-export median_value
+export median_value, get_ARGS
 
 using  Statistics
 
@@ -10,6 +10,8 @@ using .ising: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQU
 include("../src/exceptions.jl")
 using .exceptions: NotIntegerException
 
+const SIMULS_DIR = "all_simulations"
+const AUTOMATED_SIMULS_DIR = joinpath(SIMULS_DIR, "automated")
 
 #= Function for swaping values at diferent index locations returning array =#
 function swap!(val1::Int, val2::Int, obj::Union{Array{Float64,1},Array{Int,1}})
@@ -78,7 +80,7 @@ function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)
 end
 
     #= Gets an array of strings form a .txt file =#
-function get_str_array(file_path::AbstractString):: Array{String,1}
+function get_str_array(file_path::AbstractString)::Array{String,1}
     stringified_array = []
     try
         opened_file = open(file_path, "r+")
@@ -174,4 +176,94 @@ const TEMPERATURE_INTERVALS = aux_temps_intervals
 function replace_with_dict(str :: String, replace_dict :: Dict{T, String} where T <: Any) :: String 
     return replace(str,replace_dict...)
 end
+
+function append_2_element_array_or_throw(arr1::AbstractArray,arr2)
+    if arr[1] < arr[2]
+        throw(exceptions.IlegalChoiceException("Ilegal choice. Tf < Ti"))  
+    end
+    append!(arr2,arr1)    
+end
+
+function get_ARGS()::Array{Union{Int64,Float64},1}
+    ARGS = Union{Int64,Float64}[]
+    
+    println("Provide initial and final temperatures. Ti < Tf")
+    
+    println()
+     
+    println("Initial temperature:")
+    init_temp = parse_int_float64(Float64, readline())
+    
+    println()
+    
+    println("Final temperature:")
+    final_temp = parse_int_float64(Float64, readline())
+    
+    append_2_element_array_or_throw([init_temp,final_temp],ARGS)
+
+    println()
+
+    println("Number of runs:")
+    num_runs = parse_int_float64(Int, readline())
+    push!(ARGS,num_runs)
+
+    println()
+     
+    println("Increment: ")
+    increment = parse_int_float64(Float64, readline())
+    push!(ARGS,increment)
+
+    println("Grid size")
+    n_grid = parse_int_float64(Int, readline())
+    push!(ARGS,n_grid)
+
+    println()
+     
+    println("Number of generations:")
+    num_generations = parse_int_float64(Int, readline())
+    push!(ARGS,num_generations)
+
+    return ARGS
+end
+
+function create_automated_simulations_dir_if_not_exists()
+    if !isdir(AUTOMATED_SIMULS_DIR)
+        mkpath(AUTOMATED_SIMULS_DIR)
+    end
+end
+
+function create_simulations_dir_if_not_exists()
+    if !isdir(SIMULS_DIR)
+        mkpath(SIMULS_DIR)
+    end
+end
+
+function create_simulation_dir(temp::Float64)::String
+    ROUNDED_TEMP = round(temp, digits=2)
+    str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
+    simulations_dir =  abspath(string("simulations_T_", str_temp)) #folder containing simulations al temp str_temp 
+    mkpath(simulations_dir)
+    return simulations_dir
+end
+
+function create_magnetization_dir(simulation_dir::String)::String
+    global_magnetization_aux_dir = joinpath(simulation_dir, "magnetization")
+    mkpath(global_magnetization_aux_dir)
+
+    return global_magnetization_dir
+end
+
+function create_magnetization_time_series_file(file_name, dir_to_save)
+    #= Creation of generic .txt files containing global magnetization time series =#
+    magnetization_file_path = joinpath(dir_to_save, file_name)
+    touch(magnetization_file_name)
+
+    return magnetization_file_path
+end
+
+function create_fourier_dir(simulations_dir::String)::String
+    FOURIER_AUTOMATED_DIR = joinpath(simulations_dir, "fourier")
+    mkpath(FOURIER_AUTOMATED_DIR)  
+end
+
 end #end of module

@@ -22,4 +22,5 @@ function correlated_noise_generator(N::Int64,beta0::Float64,beta1::Float64)::Arr
 
     return norm_array * CorrelatedNoise.imexp(phase_arr)
 end
+
 end #end of module

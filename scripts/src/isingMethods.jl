@@ -1,6 +1,7 @@
 module isingMethods
-export display,reset_stats,compute_energy_cell,update_energy,update_magnetization,randomize,set_magnetization,try_cell_flip,get_cell_coords,get_cell_id
-export do_generation, choose_flip_strategy, choose_trans_dynamics
+export display,reset_stats,compute_energy_cell,update_energy,update_magnetization,randomize,set_magnetization,update_ising_model
+export try_cell_flip,get_cell_coords,get_cell_id
+export do_generation, do_generation_and_write_ising_model_prop_over_file, write_spin_grid, choose_flip_strategy, choose_trans_dynamics
 
 include("../src/ising.jl")
 using .ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
@@ -113,23 +114,6 @@ function update_magnetization(ising_model :: isingModel)
     setfield!(ising_model,:global_magnetization,g_magnetization)
 end
 
-#=Randomly populates the spin grid=#
-function randomize(ising_model :: isingModel)
-    spin_grid = ising_model.grid
-    rn = 0 
-    for i in 1:ising_model.NGRID
-        for j in 1:ising_model.NGRID
-          rn = rand(Int)
-          if rn % 2 === 0 
-            spin_grid[i,j] =-1;
-          else 
-            spin_grid[i,j] = 1;
-          end
-        end
-    end
-    setfield!(ising_model,:grid,spin_grid)
-end
-
 #=Generates random changes in the spin grid but conserving a given magnetization=#
 function set_magnetization(magn :: Float64, ising_model :: isingModel)
     spin_grid = ising_model.grid
@@ -147,8 +131,32 @@ function set_magnetization(magn :: Float64, ising_model :: isingModel)
     setfield!(ising_model,:grid,spin_grid)
 end
 
+function update_ising_model(ising_model::isingModel,init_magn::Float64)
+    reset_stats(ising_model)
+    set_magnetization(init_magn, ising_model) #populates the spin grid with a given initial magnetization 
+    update_magnetization(ising_model) #updates global magnetization 
+    update_energy(ising_model) #updates global energy 
+end
+
+#=Randomly populates the spin grid=#
+function randomize(ising_model :: isingModel)
+    spin_grid = ising_model.grid
+    rn = 0 
+    for i in 1:ising_model.NGRID
+        for j in 1:ising_model.NGRID
+          rn = rand(Int)
+          if rn % 2 === 0 
+            spin_grid[i,j] =-1;
+          else 
+            spin_grid[i,j] = 1;
+          end
+        end
+    end
+    setfield!(ising_model,:grid,spin_grid)
+end
+
 #=Method for trying a flip spin=#
-function try_cell_flip(i :: Int, j :: Int, ising_model :: isingModel)
+    function try_cell_flip(i :: Int, j :: Int, ising_model :: isingModel)
     g_energy = 0
     prob = 0
     old_E = compute_energy_cell(i,j,ising_model)
@@ -244,6 +252,51 @@ function do_generation(ising_model :: isingModel)
                 try_cell_flip(i,j,ising_model) #sequential flip
             end        
         end
+    end
+end
+
+function write_ising_model_prop_initial_state_over_file(ising_model::isingModel,file_to_write::String,prop_name::Symbol)
+    #= Initial observations of the global magnetizaton are saved to their respective .txt files=#
+    prop = string(getfield(ising_model,prop_name))
+    open(file_to_write, "w+") do file_to_write  
+        write(file_to_write, prop)
+    end 
+end
+
+function do_generation_and_write_ising_model_prop_over_file(ising_model::isingModel,file_to_write::String,prop_name::Symbol,generation::Int64)
+    isingMethods.do_generation(ising_model)
+    setfield!(ising_model, :cur_gen, generation)
+    prop = string(getfield(ising_model,prop_name))
+
+    open(file_to_write, "a+") do file_to_write
+        if generation != ARGS[6]
+            prop *= "\n"
+        end    
+        write(file_to_write, prop)
+    end       
+end
+
+function do_generation_and_write_ising_model_prop_over_file(ising_model::isingModel,file_to_write::String,prop_name::Symbol,generation::Int64)
+    isingMethods.do_generation(ising_model)
+    setfield!(ising_model, :cur_gen, generation)
+    prop = string(getfield(ising_model,prop_name))
+
+    open(file_to_write, "a+") do file_to_write
+        if generation != ARGS[6]
+            prop *= "\n"
+        end    
+        write(file_to_write, prop)
+    end       
+end
+
+function write_ising_model_sprin_grid(ising_model::isingModel,file_to_write::String,generation::Int64)
+    prop = string(isingMethods.display(ising_model, ising_model.cur_gen))
+    
+    open(file_to_write, "a+") do file_to_write
+        if generation != ARGS[6]
+            prop *= "\n"
+        end    
+        write(file_to_write, prop)
     end
 end
 
