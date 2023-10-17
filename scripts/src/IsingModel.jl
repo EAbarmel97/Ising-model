@@ -2,7 +2,7 @@ module IsingModel
 export do_simulations
 
 include("ising.jl")
-using .isingModel: isingModel
+using .isingModel: isingModel 
 
 include("isingMethods.jl")
 using .isingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
