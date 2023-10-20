@@ -65,4 +65,5 @@ for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
     end
 
     #= TO DO: implement logic to obtain the order coefficient β =#
+    fourierAnalysis.write_order_coef("","")
 end

@@ -51,7 +51,7 @@ function write_rfft(arr :: Array{ComplexF64,1}, destination_dir :: AbstractStrin
 end
 
 #= Function to compute the power spectral density =#
-function compute_psd(arr :: Array{T,1} where T <: Complex) :: Array{Float64,1} 
+function compute_psd(arr::Array{T,1}) where T <: Complex::Array{Float64,1} 
     return abs2.(arr)
 end
 
@@ -70,17 +70,50 @@ function sampling_freq_arr(file_path :: AbstractString) :: Array{Float64,1}
 end
 
 #= method to take the average psd when array of psd at different runs is given =#
-function mean_psd(psd_array :: Array{Array{Float64,1},1}) :: Array{Float64,1}
+function mean_psd(psd_array::Array{Array{Float64,1},1})::Array{Float64,1}
     sum = zeros(length(psd_array[1]))
     for i in eachindex(psd_array)
         psd = psd_array[i]
         sum += psd    
     end
+
     return sum/length(psd_array)
+end
+
+function create_graphs_temp_sub_dir(destination_dir::String)::Nothing
+    dashed_str_temp = replace(temp_name_dir, "simulations_" => "")
+    at_temp = joinpath(curr_dir,destination_dir,dashed_str_temp) # subdir ../graphs/automated/psd/T_x_y_z or ../graphs/psd/T_x_y_z
+    mkpath(at_temp) #sub dir graphs/psd/T_x_y_z
+
+    return nothing
+end
+
+function file_names_in_fourier_dir(temp_name_dir::String)::Array{String,1}
+    rffts_at_temp = joinpath(simuls_dir,temp_name_dir,"fourier")
+    return readdir(rffts_at_temp) #names of the rffts .txt file saved under the dir ../fourier/
+end
+
+function psd_arr_by_run(temp_dir_name::String)::Array{Array{Float64,1},1}
+    NUM_RUNS = length(file_names_in_fourier_dir(temp_dir_name))
+    for run in 1:NUM_RUNS
+        rfft_file_name = rffts_file_names[run]
+        rfft_path = joinpath(rffts_at_temp,rfft_file_name)#abs path to the strigified file  for the rfft 
+
+        #fetching and appending psd to the array containg the power spectra densities
+        rfft = utilities.get_array_from_txt(Complex{Float64},rfft_path) #rfft of the M_n with initial temperature x_y_z
+        deleteat!(rfft,(1,length(rfft))) #discarting the DC associated entry and the last element array 
+        rfft = convert.(ComplexF64,rfft) #casting array to ComplexF64
+        
+        psd = compute_psd(rfft) #array with the psd associated with RFFT[M_n]
+        push!(psd_array,psd)
+    end
+    
+    return psd_array
 end
 
 function intercept_and_order_coef(x::Array{Float64,1},y::Array{Float64,1})::Array{Float64,1}
     X = hcat(ones(length(x)),x)
+
     return inv(X'*X)*(X'*y)
 end
 
@@ -88,6 +121,7 @@ function intercept_and_order_coef_from_log_psd(f::Array{Float64,1},average_psd::
     log10_f = log10.(f)
     log10_mean_psd = log10.(average_psd)
     beta0, beta1 = intercept_and_order_coef(log10_f,log10_mean_psd)
+
     return [beta0,beta1]
 end
 
@@ -118,10 +152,9 @@ function plot_order_coef()
     
 end
 
-#= 
-Module method for plotting psd wuth options to plot several psd on the same canvas, providing one generic 
-under which all psd will be saved. 
-=#
+"""
+Plots all psd in log-log superimposed on a same canvas, highlighting the mean psd in red, and the linear fit as well
+"""
 function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractString)
     
     #auxiliar variables
@@ -140,7 +173,7 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
     at_temp = joinpath(curr_dir,destination_dir,dashed_str_temp) # subdir ../graphs/automated/psd/T_x_y_z or ../graphs/psd/T_x_y_z
     mkpath(at_temp) #sub dir graphs/psd/T_x_y_z
     
-    rffts_at_temp = joinpath(simuls_dir,temp_name_dir,"fourier")
+    #= rffts_at_temp = joinpath(simuls_dir,temp_name_dir,"fourier")
     rffts_file_names = readdir(rffts_at_temp) #names of the rffts .txt file saved under the dir ../fourier/
     
     NUM_RUNS = length(readdir(rffts_at_temp))
@@ -156,8 +189,9 @@ function plot_psd(temp_name_dir :: AbstractString, destination_dir :: AbstractSt
         
         psd = fourierAnalysis.compute_psd(rfft) #array with the psd associated with RFFT[M_n]
         push!(psd_array,psd)
-    end
-    
+    end =#
+
+    psd_array = psd_arr_by_run(temp_name_dir)
     average_psd = mean_psd(psd_array) #mean psd
 
     #string manipulations
