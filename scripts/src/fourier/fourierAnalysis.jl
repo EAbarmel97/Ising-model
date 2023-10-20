@@ -94,14 +94,16 @@ function file_names_in_fourier_dir(temp_name_dir::String)::Array{String,1}
 end
 
 function psd_arr_by_run(temp_dir_name::String)::Array{Array{Float64,1},1}
-    NUM_RUNS = length(file_names_in_fourier_dir(temp_dir_name))
-    for run in 1:NUM_RUNS
-        rfft_file_name = rffts_file_names[run]
+    psd = Vector{Array{Float64,1}}()
+    rffts_at_temp = joinpath(simuls_dir,temp_name_dir,"fourier")
+    for rfft_file_name in file_names_in_fourier_dir(temp_dir_name)
         rfft_path = joinpath(rffts_at_temp,rfft_file_name)#abs path to the strigified file  for the rfft 
 
         #fetching and appending psd to the array containg the power spectra densities
-        rfft = utilities.get_array_from_txt(Complex{Float64},rfft_path) #rfft of the M_n with initial temperature x_y_z
-        deleteat!(rfft,(1,length(rfft))) #discarting the DC associated entry and the last element array 
+        rfft = utilities.get_array_from_txt(Complex{Float64},rfft_path)
+        #rfft of the M_n with initial temperature x_y_z
+        rfft = rfft[2:end-1]#discarting the DC associated entry and the last element array 
+        
         rfft = convert.(ComplexF64,rfft) #casting array to ComplexF64
         
         psd = compute_psd(rfft) #array with the psd associated with RFFT[M_n]
