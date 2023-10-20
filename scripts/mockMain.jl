@@ -1,5 +1,5 @@
 include("src/IsingModel.jl")
-using .IsingModel
+using .IsingModel:do_simulations
 
 include("src/utilities.jl")
 using .utilities: get_ARGS

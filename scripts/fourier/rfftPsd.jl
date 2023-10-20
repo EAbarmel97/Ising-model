@@ -1,5 +1,5 @@
 include("../src/fourier/fourierAnalysis.jl")
-using .fourierAnalysis: compute_rfft, compute_psd, sampling_freq_arr, plot_psd
+using .fourierAnalysis: compute_rfft, compute_psd, sampling_freq_arr, plot_psd, create_order_coef_dir_and_file
 
 include("../src/utilities.jl")
 using .utilities: get_array_from_txt, parse_int_float64
@@ -7,7 +7,7 @@ using .utilities: get_array_from_txt, parse_int_float64
 #= auxiliary constants  =#
 const CURR_DIR = pwd()
 const AUTOMATED_SIMULS_DIR = joinpath(CURR_DIR, "all_simulations","automated/")
-const AUTOMATED_PSD_GRAPHS = joinpath("graphs","automated","psd/")
+const AUTOMATED_PSD_GRAPHS = joinpath("graphs","automated","psd")
 const ALL_AUTOMATED_SIMULS_DIRS = readdir(AUTOMATED_SIMULS_DIR)
 const ALL_GLOBAL_MAGN_DIRS = joinpath.(AUTOMATED_SIMULS_DIR, ALL_AUTOMATED_SIMULS_DIRS, "magnetization/")
 const ALL_AUTOMATED_RFFTS = joinpath.(AUTOMATED_SIMULS_DIR, ALL_AUTOMATED_SIMULS_DIRS, "fourier/")
@@ -23,11 +23,14 @@ if !isdir(AUTOMATED_PSD_GRAPHS)
     mkpath(AUTOMATED_PSD_GRAPHS)
 end
 
+fourierAnalysis.create_order_coef_dir_and_file()
+
 #writing under each simulations_T_x_y_z/fourier/ dir the rfft at each run and plotting the psd
 for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
     # array of strings has generic strings of the the type: simulations_T_x_y_z
     simul_dir_name = ALL_AUTOMATED_SIMULS_DIRS[i]
-     
+    simul_sub_dir = replace(ALL_AUTOMATED_SIMULS_DIRS[i],"simulations_" => "")
+
     for run in 1:NUM_RUNS
         #= 
         global magnetization with initial temperature T_x_y_z s is under the directory 
@@ -53,9 +56,13 @@ for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
             fourierAnalysis.write_rfft(rfft,fourier_dir,temp,run)        
         end
     end
-    
-    #plotting the power density spectra
-    fourierAnalysis.plot_psd(simul_dir_name,AUTOMATED_PSD_GRAPHS)
+
+    simul_dir_abs_path = joinpath(AUTOMATED_PSD_GRAPHS,)
+
+    if !isfile(rfft_path)
+        #plotting the power density spectra
+        fourierAnalysis.plot_psd(simul_dir_name,AUTOMATED_PSD_GRAPHS)      
+    end
 
     #= TO DO: implement logic to obtain the order coefficient β =#
 end

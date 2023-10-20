@@ -1,5 +1,5 @@
 module fourierAnalysis
-export  compute_rfft, compute_psd, write_rfft,plot_psd
+export  compute_rfft, compute_psd, write_rfft, plot_psd, create_order_coef_dir_and_file, write_order_coef
 
 using FFTW
 using Plots
@@ -84,11 +84,38 @@ function intercept_and_order_coef(x::Array{Float64,1},y::Array{Float64,1})::Arra
     return inv(X'*X)*(X'*y)
 end
 
-function intercept_and_order_coef_from_log_psd(f::Array{Float64,4},average_psd::Array{Float64,1})::Array{Float64,1}
+function intercept_and_order_coef_from_log_psd(f::Array{Float64,1},average_psd::Array{Float64,1})::Array{Float64,1}
     log10_f = log10.(f)
     log10_mean_psd = log10.(average_psd)
     beta0, beta1 = intercept_and_order_coef(log10_f,log10_mean_psd)
     return [beta0,beta1]
+end
+
+function create_order_coef_dir_and_file()
+    order_coef_dir = joinpath("graphs/automated","order_coef")
+    order_coef_file_path = joinpath(order_coef_dir,"order_coef.txt")
+
+    if !isdir(order_coef_dir)
+        mkpath(order_coef_dir)
+        touch(order_coef_file_path)
+    end
+end
+
+function write_order_coef(order_coef::Float64,num_runs::Int64)
+    order_coef_file_path = "graphs/automated/order_coef/order_coef.txt"
+    if i != num_runs
+        val_to_append = string(order_coef,"\n") 
+    else
+        val_to_append = string(order_coef)
+    end
+
+    open(order_coef_file_path,"a+") do order_coef_file_path
+        write(order_coef_file_path,val_to_append)
+    end       
+end
+
+function plot_order_coef()
+    
 end
 
 #= 
