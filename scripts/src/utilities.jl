@@ -5,8 +5,8 @@ export create_simulation_sub_dir,create_fourier_dir,create_automated_simulations
 
 using  Statistics
 
-include("../src/ising.jl")
-using .ising: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
+include("../src/Ising.jl")
+using .Ising: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
 
 include("../src/exceptions.jl")
 using .exceptions: NotIntegerException
@@ -232,6 +232,7 @@ function get_ARGS()::Array{Union{Int64,Float64},1}
     return ARGS
 end
 
+#= IO handling auxiliary functions =#
 function create_automated_simulations_dir_if_not_exists()
     if !isdir(AUTOMATED_SIMULS_DIR)
         mkpath(AUTOMATED_SIMULS_DIR)
@@ -270,6 +271,12 @@ end
 function create_fourier_dir(simulations_dir::String)::String
     FOURIER_AUTOMATED_DIR = joinpath(simulations_dir, "fourier")
     mkpath(FOURIER_AUTOMATED_DIR)  
+end
+
+
+function count_runs_in_dir(simuls_dir::Array{String,1})::Int64
+    temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization") #abs path to the simulations at a given temp 
+    return length(readdir(temp_abs_dir)) #number of runs contained in a given simulations dir
 end
 
 end #end of module

@@ -11,8 +11,8 @@ using .utilities: get_array_from_txt, mean_value, median_value, neglect_N_first_
 include("exceptions.jl")
 using .exceptions: PlottingException
 
-include("ising.jl")
-using .ising: CRITICAL_TEMP
+include("Ising.jl")
+using .Ising: CRITICAL_TEMP
 
 #= Function to save the traces of the time series contained in .txt files =#
 function save_traze(dir_to_save::AbstractString, 
@@ -29,15 +29,6 @@ function save_traze(dir_to_save::AbstractString,
     ylabel!(L"M_n")
     savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
 end
-#= 
-function create_graphs_dir_if_not_exists()
-    curr_dir = pwd()
-    GRAPHS_AUTOMATED_DIR = joinpath(curr_dir, "graphs", "automated")
-
-    if !isdir(GRAPHS_AUTOMATED_DIR)
-        mkpath(GRAPHS_AUTOMATED_DIR)
-    end
-end
 
 function create_temperature_sub_dir(sub_dir:: String)
     #creation of the sub dir that will be populated with graphs of magnetization times series at a given temp and run 
@@ -53,7 +44,7 @@ function create_temperature_sub_dir(sub_dir:: String)
 end
 
 function count_runs_in_dir(simuls_dir::Array{String,1})::Int64
-    temp_abs_dir = joinpath(curr_dir,simuls_dir,aux_dir_name,"magnetization") #abs path to the simulations at a given temp 
+    temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization") #abs path to the simulations at a given temp 
     return length(readdir(temp_abs_dir)) #number of runs contained in a given simulations dir
 end
 
@@ -150,7 +141,7 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
     catch
 
     end
-end =#
+end
 
 #= 
 Function to write over file and plot the time series contained in each of the all_simulations subdirectories 

@@ -13,8 +13,17 @@ using .utilities: swap!
 using Random 
 Random.seed!(1234)
 
-#=Unicode representation of the spin grid=#
-function display(ising_model::isingModel)
+"""
+Unicode representation of the spin grid.
+
+Example: for a 3x3 array the function could print on terminal something like this
+
+++-
+-++
+---
+
+"""
+function display(ising_model::isingModel)::Nothing
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
             if ising_model.grid[i,j] === 1
@@ -24,7 +33,9 @@ function display(ising_model::isingModel)
             end     
         end
         println()
-    end    
+    end 
+    
+    return nothing
 end
 
 #= Method with returns a  stringified version of the spin grid=#
@@ -39,19 +50,26 @@ function display(ising_model::isingModel, generation::Int )::String
             end     
         end
         str = str*"\n" #line break
-    end 
+    end
+
     return str   
 end
 
-#=Resets statistics=#
-function reset_stats(ising_model::isingModel)
+"""
+    reset_stats(ising_model::isingModel)::nothin
+
+resets the fields global_energy, global_mean, global_variance, global_magnetization to be all 0's
+"""
+function reset_stats(ising_model::isingModel)::Nothing
     fields_names_to_reset = ["global_energy","global_mean","global_variance",
     "global_magnetization"]
 
     for (i,field_name_string) in enumerate(fields_names_to_reset)
         field_name = Symbol(field_name_string) #converts string to Symbol 
         setfield!(ising_model,field_name,0.0)
-    end      
+    end
+    
+    return nothing
 end
 
 
