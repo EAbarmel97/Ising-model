@@ -57,13 +57,13 @@ for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
         end
     end
 
-    simul_dir_abs_path = joinpath(AUTOMATED_PSD_GRAPHS,)
+    psd_plot_file_name = "psd_$(simul_sub_dir)_r_1_$(NUM_RUNS).pdf"
+    psd_plot_file_abs_path = joinpath(AUTOMATED_PSD_GRAPHS,psd_plot_file_name)
 
-    if !isfile(rfft_path)
+    if !isfile(psd_plot_file_abs_path)
         #plotting the power density spectra
         fourierAnalysis.plot_psd(simul_dir_name,AUTOMATED_PSD_GRAPHS)      
     end
 
     #= TO DO: implement logic to obtain the order coefficient β =#
-    fourierAnalysis.write_order_coef("","")
 end
