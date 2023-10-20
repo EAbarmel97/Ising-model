@@ -1,7 +1,7 @@
 module isingMethods
 export display,reset_stats,compute_energy_cell,update_energy,update_magnetization,randomize,set_magnetization,update_ising_model
 export try_cell_flip,get_cell_coords,get_cell_id
-export do_generation, do_generation_and_write_ising_model_prop_over_file, write_spin_grid, choose_flip_strategy, choose_trans_dynamics
+export do_generation, do_generation_and_write_ising_model_prop_over_file, write_spin_grid, choose_flip_strategy, choose_trans_dynamics, set_flip_strategy_and_transition_dynamics
 
 include("../src/ising.jl")
 using .ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
@@ -302,8 +302,7 @@ end
 
 #=Method which allows the user to select the a flip strategy=#
 function choose_flip_strategy(ising_model :: isingModel)
-    options_to_choose = Dict("1" => ising.RANDOM_STRATEGY, "2" => ising.SHUFFLE_STRATEGY,
-    "3" => ising.SEQUENTIAL_STRATEGY)
+    options_to_choose = Dict("1" => ising.RANDOM_STRATEGY, "2" => ising.SHUFFLE_STRATEGY, "3" => ising.SEQUENTIAL_STRATEGY)
 
     while true 
         println("Choose 1 of the 3 possible flip strategies")
@@ -357,5 +356,59 @@ function choose_trans_dynamics(ising_model :: isingModel)
         end
     end
 end
+
+function set_flip_strategy_and_transition_dynamics(ising_model::isingModel,is_automated::Bool)
+    if is_automated
+        ising_model.flip_strategy = ising.RANDOM_STRATEGY
+        ising_model.trans_dynamics = ising.METROPOLIS_DYNAMICS
+    else
+        choose_flip_strategy(ising_model)
+        choose_trans_dynamics(ising_model)
+    end 
+end
+
+
+function do_simulations(arr :: Array{Float64,1})
+    for i in eachindex(arr)
+       #= random initial temperature on the interval [-1 ,1] =#
+       rand_magn = rand()*2 - 1 
+       
+       #= temperature increments in arithmetic progression  =#
+       temp = arr[i]
+ 
+       do_model(rand_magn, temp, N_GRID) 
+    end
+ end
+ 
+ #= 
+    if user wants to simulate with the default array of temperatures containing temps in the intervals
+    a) 0.0 to 1.0 with increments of 0.1
+    b) 1.0 to 2.2 with increments of 0.1 
+    c) 2.2 to 2.5 with incremets of 0.01 
+    d) 2.5 to 3.5 with increments of 0.1 
+ =#
+ 
+ function interactive_main()
+    println()
+    if utilities.use_temperature_array()
+       do_simulations(utilities.TEMPERATURE_INTERVALS)
+    else
+       for i in 1:NUM_TEMPS
+          println()
+ 
+          println("Initial magnetization")
+          INIT_MAGN = utilities.parse_int_float64(Float64, readline())
+    
+          println()
+    
+          println("Initial temperature")
+          TEMP = utilities.parse_int_float64(Float64, readline())
+    
+          println()
+    
+          do_model(INIT_MAGN, TEMP, N_GRID)
+       end
+    end     
+ end
 end #end of module 
 
