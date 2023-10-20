@@ -244,11 +244,7 @@ function create_simulations_dir_if_not_exists()
     end
 end
 
-<<<<<<< HEAD
 function create_simulation_sub_dir(temp::Float64,is_automated::Bool)::String
-=======
-function create_simulation_sub_dir(temp::Float64)::String
->>>>>>> origin
     ROUNDED_TEMP = round(temp, digits=2)
     str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
     simulations_dir =  abspath(string("simulations_T_", str_temp)) #folder containing simulations al temp str_temp 
