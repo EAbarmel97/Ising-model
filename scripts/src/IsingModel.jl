@@ -2,28 +2,27 @@ module IsingModel
 export do_simulations
 
 include("ising.jl")
-using .isingModel: isingModel 
+using .ising: isingModel 
 
 include("isingMethods.jl")
-using .isingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
 using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization,update_ising_model ,randomize, set_magnetization
-using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
-
-include("fourier/fourierAnalysis.jl")
+using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy, set_flip_strategy_and_transition_dynamics
 
 include("utilities.jl")
+using .utilities: create_automated_simulations_dir_if_not_exists, create_simulations_dir_if_not_exists
 
-
-function do_model(init_magn::Float64, temp::Float64, n_grid::Float64, write_evol_array::Bool=false)
-    
-    utilities.create_automated_simulations_dir_if_not_exists()
+function do_model(init_magn::Float64, temp::Float64, n_grid::Float64, write_evol_array::Bool=false, is_automated::Bool=true)
+    if is_automated
+        utilities.create_automated_simulations_dir_if_not_exists()
+    else
+        utilities.create_simulations_dir_if_not_exists()
+    end
     
     ising_model = isingMethods.isingModel(temp, n_grid) #ising model struct instantiation
     
-    ising_model.flip_strategy = isingMethods.RANDOM_STRATEGY
-    ising_model.trans_dynamics = isingMethods.METROPOLIS_DYNAMICS
+    isingMethods.set_flip_strategy_and_transition_dynamics(ising_model,is_automated)
     
-    simulations_dir = utilities.create_simulation_dir(temp)
+    simulations_dir = utilities.create_simulation_sub_dir(temp,is_automated)
     
     fourier_dir = utilities.create_fourier_dir(simulations_dir)
     magnetization_dir = utilities.create_magnetization_dir(simulations_dir)
@@ -45,7 +44,7 @@ function do_model(init_magn::Float64, temp::Float64, n_grid::Float64, write_evol
 end
 
 #= do_model function wrapper to make simulations of the ising model at different temperatures =#
-function do_simulations(ARGS::Array{Union{Int64,Float64},1})
+function do_simulations(ARGS::Array{Union{Int64,Float64},1},is_automated::Bool=false)
     
     if ARGS[2] < ARGS[1]
         throw(exceptions.IlegalChoiceException("Ilegal  choice. Tf < Ti"))   

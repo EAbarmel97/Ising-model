@@ -1,6 +1,7 @@
 module utilities
 export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS, replace_with_dict
 export median_value, get_ARGS
+export create_simulation_sub_dir,create_fourier_dir,create_automated_simulations_dir_if_not_exists,create_simulations_dir_if_not_exists
 
 using  Statistics
 
@@ -148,8 +149,7 @@ function median_value(file_path::AbstractString, prune_first_N=0::Int):: Float64
 end
 
 #= Function to push fill in values in arithmetic progression on an array given the end points=#
-function push_arith_progression!(Ti :: Float64, Tf :: Float64, delta :: Float64,
-    arr :: AbstractArray)
+function push_arith_progression!(Ti::Float64, Tf::Float64, delta::Float64, arr::AbstractArray)
     val = cld(Tf-Ti,delta)
     umbral = round(abs(Tf - (Ti + val*delta)), digits=2)
     #= If the umbral lies in the interval (0,0.1], then Tf is taken to be in arithmetic 
@@ -164,13 +164,19 @@ function push_arith_progression!(Ti :: Float64, Tf :: Float64, delta :: Float64,
     end  
 end
 
-aux_temps_intervals = [0.0]
-push_arith_progression!(0.0,1.0,0.1,aux_temps_intervals)
-push_arith_progression!(1.0,2.2,0.1,aux_temps_intervals)
-push_arith_progression!(2.2,2.5,0.01,aux_temps_intervals)
-push_arith_progression!(2.5,3.5,0.1,aux_temps_intervals)
+function get_default_temperature_array()::Array{Float64}
+    default_array = [0.0]
+    push_arith_progression!(0.0,1.0,0.1,aux_temps_intervals)
+    push_arith_progression!(1.0,2.2,0.1,aux_temps_intervals)
+    push_arith_progression!(2.21,2.26,0.01,aux_temps_intervals)
+    push!(aux_temps_intervals,ising.CRITICAL_TEMP)
+    push_arith_progression!(2.27,2.5,0.01,aux_temps_intervals)
+    push_arith_progression!(2.6,3.5,0.01,aux_temps_intervals)
 
-const TEMPERATURE_INTERVALS = aux_temps_intervals
+    return default_array
+end
+
+const TEMPERATURE_INTERVALS = get_default_temperature_array()
 
 #= method to replace a function with a replacement dictionary =#
 function replace_with_dict(str :: String, replace_dict :: Dict{T, String} where T <: Any) :: String 
@@ -178,7 +184,7 @@ function replace_with_dict(str :: String, replace_dict :: Dict{T, String} where 
 end
 
 function append_2_element_array_or_throw(arr1::AbstractArray,arr2)
-    if arr[1] < arr[2]
+    if arr1[1] < arr1[2]
         throw(exceptions.IlegalChoiceException("Ilegal choice. Tf < Ti"))  
     end
     append!(arr2,arr1)    
@@ -238,7 +244,11 @@ function create_simulations_dir_if_not_exists()
     end
 end
 
-function create_simulation_dir(temp::Float64)::String
+<<<<<<< HEAD
+function create_simulation_sub_dir(temp::Float64,is_automated::Bool)::String
+=======
+function create_simulation_sub_dir(temp::Float64)::String
+>>>>>>> origin
     ROUNDED_TEMP = round(temp, digits=2)
     str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
     simulations_dir =  abspath(string("simulations_T_", str_temp)) #folder containing simulations al temp str_temp 
