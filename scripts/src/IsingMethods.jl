@@ -3,7 +3,7 @@ export display,reset_stats,compute_energy_cell,update_energy,update_magnetizatio
 export try_cell_flip,get_cell_coords,get_cell_id
 export do_generation, do_generation_and_write_ising_model_prop_over_file, write_spin_grid, choose_flip_strategy, choose_trans_dynamics, set_flip_strategy_and_transition_dynamics
 
-include("../src/ising.jl")
+include("../src/Ising.jl")
 using .Ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
 export isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
 
@@ -156,7 +156,7 @@ function randomize(ising_model::isingModel)
 end
 
 #=Method for trying a flip spin=#
-    function try_cell_flip(i::Int, j::Int, ising_model::isingModel)
+function try_cell_flip(i::Int, j::Int, ising_model::isingModel)
     g_energy = 0
     prob = 0
     old_E = compute_energy_cell(i,j,ising_model)
