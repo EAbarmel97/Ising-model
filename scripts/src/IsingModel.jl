@@ -2,10 +2,9 @@ module IsingModel
 export do_simulations
 
 include("ising.jl")
-using .isingModel: isingModel 
+using .ising: isingModel 
 
 include("isingMethods.jl")
-using .isingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
 using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization,update_ising_model ,randomize, set_magnetization
 using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 

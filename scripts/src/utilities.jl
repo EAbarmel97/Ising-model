@@ -178,7 +178,7 @@ function replace_with_dict(str :: String, replace_dict :: Dict{T, String} where 
 end
 
 function append_2_element_array_or_throw(arr1::AbstractArray,arr2)
-    if arr[1] < arr[2]
+    if arr1[1] < arr1[2]
         throw(exceptions.IlegalChoiceException("Ilegal choice. Tf < Ti"))  
     end
     append!(arr2,arr1)    
@@ -238,7 +238,7 @@ function create_simulations_dir_if_not_exists()
     end
 end
 
-function create_simulation_dir(temp::Float64)::String
+function create_simulation_sub_dir(temp::Float64)::String
     ROUNDED_TEMP = round(temp, digits=2)
     str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
     simulations_dir =  abspath(string("simulations_T_", str_temp)) #folder containing simulations al temp str_temp 
