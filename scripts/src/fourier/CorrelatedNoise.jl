@@ -1,27 +1,38 @@
 module CorrelatedNoise
+using FFTW
+
 export correlated_noise_generator,imexp
 
-function imexp(x::Array{Float64,1})::Array{ComplexF64}
+"""
+    imexp(x::Array{Float64,1})::Array{ComplexF64,1}
+    
+Returns an array of unitary norm complex numbers. Obtained from Euler's polar form
+"""
+function imexp(x::Array{Float64,1})::Array{ComplexF64,1}
     unitary_norm_complex_arr = ComplexF64[]
     for i in eachindex(x)
-        unitary_norm_complex= cos(x[i]) + im*sin(x[i])
+        unitary_norm_complex = cos(x[i]) + sin(x[i])*im
         push!(unitary_norm_complex_arr,unitary_norm_complex)
     end
     return unitary_norm_complex_arr
 end
 
+"""
+"""
 function correlated_noise_generator(N::Int64,beta0::Float64,beta1::Float64)::Array{ComplexF64,1}
     index_arr = collect(1:N)
-    log_psd = map(index_arr) do u
-        return beta0 + beta1*u
+    log10_psd = map(index_arr) do u
+        return beta0 - beta1*u
     end
 
-    psd = exp.(log_psd)
-    norm_array = sqrt.(psd)
+    psd = exp10.(log10_psd)
 
-    phase_arr = 2*pi*rand(N)
+    norm_array = sqrt.(psd) 
 
-    return norm_array .* CorrelatedNoise.imexp(phase_arr)
+    phase_arr = 2*pi*rand(N) 
+
+    z_array = norm_array .* CorrelatedNoise.imexp(phase_arr)
+
+    return ifft(z_array)
 end
-
 end #end of module

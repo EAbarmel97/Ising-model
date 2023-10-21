@@ -29,6 +29,7 @@ function save_traze(dir_to_save::AbstractString,
     ylabel!(L"M_n")
     savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
 end
+
 #= 
 function create_graphs_dir_if_not_exists()
     curr_dir = pwd()
