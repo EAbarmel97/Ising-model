@@ -119,7 +119,7 @@ function update_energy(ising_model::isingModel)
 end
 
 #=Computes the mean magnetization of the whole spin grid=#
-function update_magnetization(ising_model :: isingModel)
+function update_magnetization(ising_model::isingModel)
     g_magnetization = 0
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
@@ -281,7 +281,7 @@ function write_ising_model_prop_initial_state_over_file(ising_model::isingModel,
 end
 
 function do_generation_and_write_ising_model_prop_over_file(ising_model::isingModel,file_to_write::String,prop_name::Symbol,generation::Int64)
-    isingMethods.do_generation(ising_model)
+    do_generation(ising_model)
     setfield!(ising_model, :cur_gen, generation)
     prop = string(getfield(ising_model,prop_name))
 
@@ -294,7 +294,7 @@ function do_generation_and_write_ising_model_prop_over_file(ising_model::isingMo
 end
 
 function do_generation_and_write_ising_model_prop_over_file(ising_model::isingModel,file_to_write::String,prop_name::Symbol,generation::Int64)
-    isingMethods.do_generation(ising_model)
+    do_generation(ising_model)
     setfield!(ising_model, :cur_gen, generation)
     prop = string(getfield(ising_model,prop_name))
 
@@ -307,7 +307,7 @@ function do_generation_and_write_ising_model_prop_over_file(ising_model::isingMo
 end
 
 function write_ising_model_sprin_grid(ising_model::isingModel,file_to_write::String,generation::Int64)
-    prop = string(isingMethods.display(ising_model, ising_model.cur_gen))
+    prop = string(display(ising_model, ising_model.cur_gen))
     
     open(file_to_write, "a+") do file_to_write
         if generation != ARGS[6]
@@ -376,8 +376,8 @@ end
 
 function set_flip_strategy_and_transition_dynamics(ising_model::isingModel,is_automated::Bool)
     if is_automated
-        ising_model.flip_strategy = ising.RANDOM_STRATEGY
-        ising_model.trans_dynamics = ising.METROPOLIS_DYNAMICS
+        ising_model.flip_strategy = Ising.RANDOM_STRATEGY
+        ising_model.trans_dynamics = Ising.METROPOLIS_DYNAMICS
     else
         choose_flip_strategy(ising_model)
         choose_trans_dynamics(ising_model)

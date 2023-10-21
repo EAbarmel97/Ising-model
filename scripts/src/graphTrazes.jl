@@ -60,7 +60,7 @@ end
 function filter_by_rgx(dirs_to_filter::Array{String,1},rgx::Regex)::Array{String,1}
     filtered_array = filter(str -> contains(str, rgx), dirs_to_filter)
     if isempty(filtered_array)
-        throw(exceptions.PlottingException("impossible to graph the given array of temperatures!"))
+        throw(Exceptions.PlottingException("impossible to graph the given array of temperatures!"))
     end
     return filtered_array 
 end
@@ -266,7 +266,7 @@ function plot_mean_magn(file_dir :: AbstractString, dir_to_save :: AbstractStrin
         plt = plot(temps, mean_magns, label = L"\overline{M}_n")
         ylims!(0.0, 1.0)
         xlims!(0,3.5)
-        vline!(plt, [ising.CRITICAL_TEMP, ising.CRITICAL_TEMP], label=L"T_c", linewidth=1, fillalpha=0.02)
+        vline!(plt, [Ising.CRITICAL_TEMP, Ising.CRITICAL_TEMP], label=L"T_c", linewidth=1, fillalpha=0.02)
         xlabel!(L"T")
         ylabel!("mean magnetization")
         savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory 
