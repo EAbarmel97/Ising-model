@@ -8,8 +8,8 @@ using LaTeXStrings
 include("utilities.jl")
 using .utilities: get_array_from_txt, mean_value, median_value, neglect_N_first_from_array!,parse_int_float64
 
-include("exceptions.jl")
-using .exceptions: PlottingException
+include("Exceptions.jl")
+using .Exceptions: PlottingException
 
 include("Ising.jl")
 using .Ising: CRITICAL_TEMP
@@ -172,7 +172,7 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
     #filtering all file names that match the given regex 
     filtered_array = filter(str -> contains(str, rgx), dir_names)
     if isempty(filtered_array)
-        throw(exceptions.PlottingException("impossible to graph the given array of temperatures!"))
+        throw(Exceptions.PlottingException("impossible to graph the given array of temperatures!"))
     end 
     
     temperatures = Float64[]
