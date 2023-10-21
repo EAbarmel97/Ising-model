@@ -1,5 +1,5 @@
 module fourierAnalysis
-export  compute_rfft, compute_psd, write_rfft, plot_psd, create_order_coef_dir_and_file, write_order_coef
+export  compute_rfft, compute_psd, write_rfft, plot_psds
 
 using FFTW
 using Plots
@@ -15,9 +15,13 @@ using .utilities: get_array_from_txt
 const PSD_GRAPHS =  "graphs/psd"
 const AUTOMATED_PSD_GRAPHS =  "graphs/automated/psd"
 
-#= Function wrapper to the FFTW's rfft method. This wrapper takes a .txt file of numbers, parses them 
-   an computes the rfft =#
-function compute_rfft(file_path :: AbstractString) :: Array{ComplexF64,1}
+"""
+    compute_rfft(file_path::AbstractString)::Array{ComplexF64,1}
+
+Function wrapper to the FFTW's rfft method. Takes a .txt file of numbers, parses them 
+an computes its rfft
+"""
+function compute_rfft(file_path::AbstractString)::Array{ComplexF64,1}
     time_series = utilities.get_array_from_txt(file_path)
     return rfft(time_series) 
 end 
@@ -56,8 +60,12 @@ function compute_psd(arr::Array{T,1}) where T <: Complex
     return squared_norms
 end
 
-#= Function to determine the array containing sampling frecuencies when an abs path is given as argument =#
-function sampling_freq_arr(file_path :: AbstractString) :: Array{Float64,1}
+"""
+    sampling_freq_arr(file_path::String)::Array{Float64,1}
+
+Determines the array containing sampling frecuencies when an abs path is given as argument
+"""
+function sampling_freq_arr(file_path::String)::Array{Float64,1}
     freq_arr = []
     open(file_path,"r") do io
         num_lines = countlines(io)
@@ -70,9 +78,22 @@ function sampling_freq_arr(file_path :: AbstractString) :: Array{Float64,1}
     return freq_arr
 end
 
-#= method to take the average psd when array of psd at different runs is given =#
+function sampling_freq_arr(N::Int64)
+    freq_arr= rfftfreq(N)
+    freq_arr = convert.(Float64,sampling_freq_arr) 
+
+    deleteat!(freq_arr,1)
+
+    return freq_arr
+end
+
+""""
+    mean_psd(psd_array::Array{Array{Float64,1},1})::Array{Float64,1}
+
+returns the average psd when array of psd at different runs is given
+"""
 function mean_psd(psd_array::Array{Array{Float64,1},1})::Array{Float64,1}
-    sum = zeros(length(psd_array[1]))
+    sum = zeros(length(first(psd_array)))
     for i in eachindex(psd_array)
         psd = psd_array[i]
         sum += psd    
@@ -96,6 +117,13 @@ function determine_simulation_dir(destination_dir::String)::String
     return simuls_dir
 end
 
+"""
+    create_graphs_temp_sub_dir(temp_name_dir::String,destination_dir::String)::Nothing
+
+creates under /graphs/ the folder corresponding to a the simulations made a given temperature
+
+Ex: /graphs/psd/T_1_34
+"""
 function create_graphs_temp_sub_dir(temp_name_dir::String,destination_dir::String)::Nothing
     dashed_str_temp = replace(temp_name_dir, "simulations_" => "")
     at_temp = joinpath(destination_dir,dashed_str_temp) # subdir ../graphs/automated/psd/T_x_y_z or ../graphs/psd/T_x_y_z
@@ -105,6 +133,8 @@ function create_graphs_temp_sub_dir(temp_name_dir::String,destination_dir::Strin
 end
 
 """
+    file_names_in_fourier_dir(temp_name_dir::String, simuls_dir::String)::Array{String,1}
+
 returns a list with all the rffts saved under a simulation dir at a given temperature
 """
 function file_names_in_fourier_dir(temp_name_dir::String, simuls_dir::String)::Array{String,1}
@@ -113,12 +143,19 @@ function file_names_in_fourier_dir(temp_name_dir::String, simuls_dir::String)::A
 end
 
 """
+    num_runs(temp_dir_name::String,simuls_dir)::Int64
+
 computes the number of files contained in the ../fourier/ dir. That is the same as the number of runs
 """
 function num_runs(temp_dir_name::String,simuls_dir)::Int64
     return length(file_names_in_fourier_dir(temp_dir_name,simuls_dir))
 end
 
+"""
+    psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{Float64,1},1}
+
+returns an array with the psd at each run.
+"""
 function psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{Float64,1},1}
     rffts_at_temp = joinpath(simuls_dir,temp_dir_name,"fourier")
     psd_array = Array{Float64,1}[]
@@ -139,6 +176,13 @@ function psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{F
     return psd_array
 end
 
+"""
+    psd_graph_file_path(temp_dir_name::String,destination_dir::String)::String
+
+Builds the absolute path to the psd graph. Of all superimposed psd ar different runs
+
+Ex: "graphs/automated/psd_T_0_32_r_1_10.pdf"
+"""
 function psd_graph_file_path(temp_dir_name::String,destination_dir::String)::String
     NUM_RUNS = num_runs(temp_dir_name, determine_simulation_dir(destination_dir))
 
@@ -149,50 +193,81 @@ function psd_graph_file_path(temp_dir_name::String,destination_dir::String)::Str
     return full_file_path
 end
 
+function psd_graph_file_path(destination_dir::String,beta1::Float64)::String
+    if beta1 == 0.0
+        description = "white noise"
+    end     
+    
+    if beta1 == 1.0
+        description = "pink noise"
+    end
+
+    if beta1 == 2.0
+        description = "brownian motion"
+    end    
+
+    full_file_path = joinpath(destination_dir,"psd_$(description).pdf")
+
+    return full_file_path
+end
+
 #= Auxiliar functions related to linear fit =#
 
-function intercept_and_order_coef(x::Array{Float64,1},y::Array{Float64,1})::Array{Float64,1}
+"""
+    intercept_and_exponent(x::Array{Float64,1},y::Array{Float64,1})::Array{Float64,1}
+
+Returns an array with the parameter estimators for a linear fit
+"""
+function intercept_and_exponent(x::Array{Float64,1},y::Array{Float64,1})::Array{Float64,1}
     X = hcat(ones(length(x)),x)
 
     return inv(X'*X)*(X'*y)
 end
 
-function intercept_and_order_coef_from_log_psd(f::Array{Float64,1},average_psd::Array{Float64,1})::Array{Float64,1}
+"""
+    intercept_and_exponent_from_log_psd(f::Array{Float64,1},average_psd::Array{Float64,1})::Array{Float64,1}
+
+Gives a 2 dimensional array containing the parameter estimators of a 2d linear fit
+"""
+function intercept_and_exponent_from_log_psd(f::Array{Float64,1},average_psd::Array{Float64,1})::Array{Float64,1}
     log10_f = log10.(f)
     log10_mean_psd = log10.(average_psd)
-    beta0, beta1 = intercept_and_order_coef(log10_f,log10_mean_psd)
+    beta0, beta1 = intercept_and_exponent(log10_f,log10_mean_psd)
 
     return [beta0,beta1]
 end
 
-function create_order_coef_dir_and_file()
-    order_coef_dir = joinpath("graphs/automated","order_coef")
-    order_coef_file_path = joinpath(order_coef_dir,"order_coef.txt")
+function create_exponent_dir_and_file()
+    exponent_dir = joinpath("graphs/automated","exponent")
+    exponent_file_path = joinpath(exponent_dir,"exponent.txt")
 
-    if !isdir(order_coef_dir)
-        mkpath(order_coef_dir)
-        touch(order_coef_file_path)
+    if !isdir(exponent_dir)
+        mkpath(exponent_dir_dir)
+        touch(exponent_file_path)
     end
 end
 
-function write_order_coef(order_coef::Float64,num_runs::Int64)
-    order_coef_file_path = "graphs/automated/order_coef/order_coef.txt"
+function write_exponent(exponent::Float64,num_runs::Int64)
+    exponent_file_path = "graphs/automated/exponent/exponent.txt"
     if i != num_runs
-        val_to_append = string(order_coef,"\n") 
+        val_to_append = string(exponent,"\n") 
     else
-        val_to_append = string(order_coef)
+        val_to_append = string(exponent)
     end
 
-    open(order_coef_file_path,"a+") do order_coef_file_path
-        write(order_coef_file_path,val_to_append)
+    open(exponent_file_path,"a+") do exponent_file_path
+        write(exponent_file_path,val_to_append)
     end       
 end
 
+#= TO DO: implement logic for plotting the beta1 (exponent) parameter of an linear model fitted to a log PSD =#
 function plot_order_coef()
     
 end
 
 """
+    plot_psd(temp_name_dir::AbstractString,destination_dir::AbstractString)
+
 Plots all psd in log-log superimposed on a same canvas, highlighting the mean psd in red, and the linear fit as well
 """
 function plot_psd(temp_name_dir::AbstractString,destination_dir::AbstractString)
@@ -210,24 +285,60 @@ function plot_psd(temp_name_dir::AbstractString,destination_dir::AbstractString)
     magn_ts_abs_path = joinpath(magn_dir_at_temp,magn_file_name)
     
     f = sampling_freq_arr(magn_ts_abs_path)
-    params = intercept_and_order_coef_from_log_psd(f,average_psd)
-    
-    #plot styling
-    plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
-    
-    plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,lc=:red)
-    #linear fit
-    plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+    params = intercept_and_exponent_from_log_psd(f,average_psd)
 
     full_file_path = psd_graph_file_path(temp_name_dir,destination_dir)
 
-    str_temp = replace(temp_name_dir,"simulations_T_" => "", "_" => ".")
-
-    title!("PSD for ts with init temp $(str_temp)")
-    xlabel!(L"f")
-    ylabel!("power density spectra")
+    if !isfile(full_file_path)
+        #plot styling
+        plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
+        
+        plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,lc=:red)
+        #linear fit
+        plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+        
+        str_temp = replace(temp_name_dir,"simulations_T_" => "", "_" => ".")
     
-    #file saving
-    savefig(plt, full_file_path)
+        title!("PSD for ts with init temp $(str_temp)")
+        xlabel!(L"f")
+        ylabel!("power density spectra")
+        
+        #file saving
+        savefig(plt, full_file_path)
+    end        
+end
+
+"""
+    plot_psd(destination_dir::AbstractString)
+
+Plots the psd associated with a complex array of numbers in log-log scale, highlighting the linear fit in black
+"""
+function plot_psd(x::Array{ComplexF64,1}, destination_dir::String,beta0::Float64,beta1::Float64)
+    psd = compute_psd(x)
+
+    f = sampling_freq_arr(length(x))
+    params = intercept_and_exponent_from_log_psd(f,psd)
+    
+    full_file_path = psd_graph_file_path(temp_name_dir,destination_dir)
+
+    if !isfile(full_file_path)
+        #plot styling
+        plt = plot(f,psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
+        
+        #expected linear fit
+        plot!((x) -> exp10(beta0-beta1*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+
+        #linear fit
+        plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+    
+        str_temp = replace(temp_name_dir,"simulations_T_" => "", "_" => ".")
+    
+        title!("PSD for ts with init temp $(str_temp)")
+        xlabel!(L"f")
+        ylabel!("power density spectra")
+        
+        #file saving
+        savefig(plt, full_file_path)
+    end    
 end
 end #end of module 

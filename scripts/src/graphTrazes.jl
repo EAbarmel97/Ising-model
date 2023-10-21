@@ -30,6 +30,15 @@ function save_traze(dir_to_save::AbstractString,
     savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
 end
 
+#= function create_graphs_dir_if_not_exists()
+    curr_dir = pwd()
+    GRAPHS_AUTOMATED_DIR = joinpath(curr_dir, "graphs", "automated")
+
+    if !isdir(GRAPHS_AUTOMATED_DIR)
+        mkpath(GRAPHS_AUTOMATED_DIR)
+    end
+end
+
 function create_temperature_sub_dir(sub_dir:: String)
     #creation of the sub dir that will be populated with graphs of magnetization times series at a given temp and run 
     at_temp = replace(sub_dir,"simulations_" => "")
@@ -142,6 +151,7 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
 
     end
 end
+=#
 
 #= 
 Function to write over file and plot the time series contained in each of the all_simulations subdirectories 
