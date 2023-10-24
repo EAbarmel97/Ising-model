@@ -1,4 +1,4 @@
-module exceptions
+module Exceptions
 export IlegalChoiceException, PlottingException, NotIntegerException
 #= Exception to be throwned if user makes a bad election  =#
 mutable struct IlegalChoiceException <: Exception

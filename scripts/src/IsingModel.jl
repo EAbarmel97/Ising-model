@@ -47,7 +47,7 @@ end
 function do_simulations(ARGS::Array{Union{Int64,Float64},1},is_automated::Bool=false)
     
     if ARGS[2] < ARGS[1]
-        throw(exceptions.IlegalChoiceException("Ilegal  choice. Tf < Ti"))   
+        throw(Exceptions.IlegalChoiceException("Ilegal  choice. Tf < Ti"))   
     end
 
     #= number of different temperatures equaly spaced by given incrments, contained in the interval [Ti, Tf] =#

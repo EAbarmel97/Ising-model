@@ -1,16 +1,16 @@
 using Random
 Random.seed!(1234)
 
-include("../scripts/src/isingMethods.jl")
-using .isingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
-using .isingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization, randomize, set_magnetization
-using .isingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
+include("../scripts/src/IsingMethods.jl")
+using .IsingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
+using .IsingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization, randomize, set_magnetization
+using .IsingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 
 include("../scripts/src/utilities.jl")
 using .utilities: parse_int_float64, get_array_from_txt
 
-include("../scripts/src/exceptions.jl")
-using .exceptions: IlegalChoiceException
+include("../scripts/src/Exceptions.jl")
+using .Exceptions: IlegalChoiceException
 
 
 const SIMULS_DIR = "all_simulations"
@@ -27,7 +27,7 @@ const INIT_TEMP = utilities.parse_int_float64(Float64, ARGS[1])
 const FINAL_TEMP = utilities.parse_int_float64(Float64, ARGS[2])
 
 if FINAL_TEMP < INIT_TEMP 
-   throw(exceptions.IlegalChoiceException("Ilegal  choice. Tf < Ti"))   
+   throw(Exceptions.IlegalChoiceException("Ilegal  choice. Tf < Ti"))   
 end
 
 #Number of runs

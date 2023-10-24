@@ -1,4 +1,4 @@
-module graphTrazes
+module GraphTrazes
 export save_traze, PlottingException, graph_and_write_over_file!, plot_mean_magn
 
 using Plots
@@ -15,12 +15,13 @@ include("Ising.jl")
 using .Ising: CRITICAL_TEMP
 
 #= Function to save the traces of the time series contained in .txt files =#
-function save_traze(dir_to_save::AbstractString, 
-                        file_path::AbstractString)
+function save_traze(dir_to_save::String, file_path::String)
     mean = utilities.mean_value(file_path)
     time_series = utilities.get_array_from_txt(file_path)
+
     x = collect(0:(length(time_series)-1))
     y = time_series
+    
     plt = plot(x, y, label= L"M_n") #plot reference 
     hline!(plt, [mean, mean], label=L"\overline{M}_n",linewidth=3)
     ylims!(-1.0, 1.0)
@@ -158,8 +159,7 @@ Function to write over file and plot the time series contained in each of the al
 meeting a given regex
 =#
 
-function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: AbstractString,
-                    file_to_write :: AbstractString, rgx :: Regex)
+function graph_and_write_over_file!(dir_names:: AbstractArray, simuls_dir::String, file_to_write::String, rgx::Regex)
 
     curr_dir = pwd()
     GRAPHS_DIR =  joinpath(curr_dir, "graphs")
@@ -244,7 +244,7 @@ function graph_and_write_over_file!(dir_names :: AbstractArray, simuls_dir :: Ab
 end
 
 #= method to plot custom csv file containing mean magn at its corresponding temp =#
-function plot_mean_magn(file_dir :: AbstractString, dir_to_save :: AbstractString)
+function plot_mean_magn(file_dir::String, dir_to_save::String)
     temps = []
     mean_magns = []
     # preprocesing custom csv file 

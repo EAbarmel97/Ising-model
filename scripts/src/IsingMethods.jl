@@ -1,4 +1,4 @@
-module isingMethods
+module IsingMethods
 export display,reset_stats,compute_energy_cell,update_energy,update_magnetization,randomize,set_magnetization,update_ising_model
 export try_cell_flip,get_cell_coords,get_cell_id
 export do_generation, do_generation_and_write_ising_model_prop_over_file, write_spin_grid, choose_flip_strategy, choose_trans_dynamics, set_flip_strategy_and_transition_dynamics
