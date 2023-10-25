@@ -8,12 +8,10 @@ using LaTeXStrings
 include("../Ising.jl")
 using .Ising: CRITICAL_TEMP
 
-include("../utilities.jl")
+include("../utils/utilities.jl")
 using .utilities: get_array_from_txt
 
-#= Auxiliray constants =#
-const PSD_GRAPHS =  "graphs/psd"
-const AUTOMATED_PSD_GRAPHS =  "graphs/automated/psd"
+include("../utils/paths.jl")
 
 """
     compute_rfft(file_path::AbstractString)::Array{ComplexF64,1}

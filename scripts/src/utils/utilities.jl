@@ -5,14 +5,13 @@ export create_simulation_sub_dir,create_fourier_dir,create_automated_simulations
 
 using  Statistics
 
-include("../src/Ising.jl")
+include("../Ising.jl")
 using .Ising: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
 
-include("../src/exceptions.jl")
-using .exceptions: NotIntegerException
+include("../Exceptions.jl")
+using .Exceptions: NotIntegerException
 
-const SIMULS_DIR = "all_simulations"
-const AUTOMATED_SIMULS_DIR = joinpath(SIMULS_DIR, "automated")
+include("paths.jl")
 
 #= Function for swaping values at diferent index locations returning array =#
 function swap!(val1::Int, val2::Int, obj::Union{Array{Float64,1},Array{Int,1}})
@@ -250,14 +249,27 @@ function create_simulation_sub_dir(temp::Float64,is_automated::Bool)::String
     str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
     simulations_dir =  abspath(string("simulations_T_", str_temp)) #folder containing simulations al temp str_temp 
     mkpath(simulations_dir)
+
     return simulations_dir
+end
+
+function create_graphs_dir_if_not_exits()
+    if !isdir(AGRAPHS_DIR)
+        mkpath(GRAPHS_DIR)
+    end
+end
+
+function create_automated_graphs_dir_if_not_exists()
+    if !isdir(AUTOMATED_GRAPHS_DIR)
+        mkpath(AUTOMATED_GRAPHS_DIR)
+    end
 end
 
 function create_magnetization_dir(simulation_dir::String)::String
     global_magnetization_aux_dir = joinpath(simulation_dir, "magnetization")
     mkpath(global_magnetization_aux_dir)
 
-    return global_magnetization_dir
+    return global_magnetization_aux_dir
 end
 
 function create_magnetization_time_series_file(file_name, dir_to_save)

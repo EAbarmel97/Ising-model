@@ -8,7 +8,7 @@ include("IsingMethods.jl")
 using .IsingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization,update_ising_model ,randomize, set_magnetization
 using .IsingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy, set_flip_strategy_and_transition_dynamics
 
-include("utilities.jl")
+include("utils/utilities.jl")
 using .utilities: create_automated_simulations_dir_if_not_exists, create_simulations_dir_if_not_exists
 
 function do_model(init_magn::Float64, temp::Float64, n_grid::Float64, write_evol_array::Bool=false, is_automated::Bool=true)
