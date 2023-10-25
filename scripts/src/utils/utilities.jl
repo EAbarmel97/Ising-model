@@ -1,7 +1,8 @@
 module utilities
 export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS, replace_with_dict
 export median_value, get_ARGS
-export create_simulation_sub_dir,create_fourier_dir,create_automated_simulations_dir_if_not_exists,create_simulations_dir_if_not_exists
+export create_simulation_sub_dir,create_fourier_dir,create_automated_simulations_dir_if_not_exists,create_simulations_dir_if_not_exists,create_graphs_directories,filter_directory_names
+export count_runs_in_dir
 
 using  Statistics
 
@@ -132,6 +133,19 @@ function get_array_from_txt(tp :: Union{Type{Float64}, Type{Complex{Float64}}},f
     
 end
 
+# Function 6: Get Temperatures
+function get_sorted_temperatures(filtered_array)
+    temperatures = Float64[]
+    
+    for i in eachindex(filtered_array)
+        aux_temp = replace(filtered_array[i], "simulations_T_" => "", "_" => ".")
+        temp = utilities.parse_int_float64(Float64, aux_temp)
+        push!(temperatures, temp)
+    end
+    
+    return sort!(temperatures)
+end
+
 #= Function to get the arithmetic mean value of a given time series=#
 function mean_value(file_path::AbstractString, prune_first_N=0::Int):: Float64
     sum = 0
@@ -247,14 +261,14 @@ end
 function create_simulation_sub_dir(temp::Float64,is_automated::Bool)::String
     ROUNDED_TEMP = round(temp, digits=2)
     str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
-    simulations_dir =  abspath(string("simulations_T_", str_temp)) #folder containing simulations al temp str_temp 
+    simulations_dir =  abspath(string("simulations_T_", str_temp)) #folder containing simulations all temp str_temp 
     mkpath(simulations_dir)
 
     return simulations_dir
 end
 
 function create_graphs_dir_if_not_exits()
-    if !isdir(AGRAPHS_DIR)
+    if !isdir(GRAPHS_DIR)
         mkpath(GRAPHS_DIR)
     end
 end
@@ -263,6 +277,33 @@ function create_automated_graphs_dir_if_not_exists()
     if !isdir(AUTOMATED_GRAPHS_DIR)
         mkpath(AUTOMATED_GRAPHS_DIR)
     end
+end
+
+# Function 1: Create Graphs Directories
+function create_graphs_directories()    
+    create_graphs_dir_if_not_exits()
+    create_automated_graphs_dir_if_not_exists()   
+end
+
+# Function 4: Create Temperature Directory
+function create_temperature_directory(at_temp::String, simuls_dir::String)
+    if contains(simuls_dir, "/automated/")
+        at_temp_dir = joinpath(AUTOMATED_GRAPHS_DIR, at_temp)
+        mkpath(at_temp_dir)
+    else
+        at_temp_dir = joinpath(GRAPHS_DIR, at_temp)
+        mkpath(at_temp_dir)
+    end
+end
+
+# Function 2: Filter Directory Names
+function filter_directory_names(dir_names, rgx)
+    filtered_array = filter(str -> contains(str, rgx), dir_names)
+    if isempty(filtered_array)
+        throw(exceptions.PlottingException("Impossible to graph the given array of temperatures!"))
+    end
+    
+    return filtered_array
 end
 
 function create_magnetization_dir(simulation_dir::String)::String
@@ -280,13 +321,12 @@ function create_magnetization_time_series_file(file_name, dir_to_save)
     return magnetization_file_path
 end
 
-function create_fourier_dir(simulations_dir::String)::String
+function create_fourier_dir_if_not_exists(simulations_dir::String)::String
     FOURIER_AUTOMATED_DIR = joinpath(simulations_dir, "fourier")
     mkpath(FOURIER_AUTOMATED_DIR)  
 end
 
-
-function count_runs_in_dir(simuls_dir::Array{String,1})::Int64
+function count_runs_in_dir(simuls_dir::String, aux_dir_name::String)::Int64
     temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization") #abs path to the simulations at a given temp 
     return length(readdir(temp_abs_dir)) #number of runs contained in a given simulations dir
 end
