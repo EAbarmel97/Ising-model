@@ -76,36 +76,33 @@ end
 
 function write_header(file_name::String,simuls_dir::String)
     open(file_name,"w+") do io
-        if contains(simuls_dir,"/automated/")
+        if contains(simuls_dir,"automated")
             write(io,"temp,median_magn_automated\n") 
         else
-            write(io,"temp,median_magn_automated\n") 
+            write(io,"temp,median_magn\n") 
         end 
     end   
-end 
+end
+ 
+"""
 
-function write_over_file!(file_to_write::String,temperatures_median_magn::Dict{Float64, String},simuls_dir::String)
-    write_header(file_to_write,simuls_dir)
-
-    temperatures = sort!(keys(temperatures_median_magn))
-
+"""
+function write_over_file_from_dict!(filtered_array::AbstractArray,file_to_write::String,temperatures_median_magn::Dict{Float64, String})   
+    temperatures = sort!(collect(keys(temperatures_median_magn)))
     for i in eachindex(filtered_array)
         temp = temperatures[i]
-        if i != length(filtered_array)
-            str_to_append = string("$temp,", temperatures_median_magn[temp],"\n")    
-        else
-            str_to_append = string("$temp,", temperatures_median_magn[temp]) 
-        end
-
         open(file_to_write, "a+") do io 
+            str_to_append = string("$temp,", temperatures_median_magn[temp],"\n")    
             write(io, str_to_append) 
         end
     end
 end
 
-# Function 7: Main Function
+"""
+Function 7: Main Function
+"""
 function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::AbstractString, file_to_write::AbstractString, rgx::Regex)
-    utilities.create_graphs_directories()
+    utilities.create_graphs_directories(simuls_dir)
     filtered_array = utilities.filter_directory_names(dir_names, rgx)
     
     temperatures_median_magn = Dict{Float64, String}()
@@ -123,12 +120,14 @@ function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::Abstra
             save_graphs(temp_abs_dir, aux_dir_name, run, at_temp)
         end
     end
-    
-    write_over_file!(file_to_write,temperatures_median_magn,simuls_dir)
+
+    #writes
+    write_over_file_from_dict!(filtered_array,file_to_write,temperatures_median_magn)
 end
 
 function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::AbstractString, file_to_write::AbstractString)
     rgx_arr = [r"T_0_\d{1,2}",r"T_1_\d{1,2}",r"T_2_\d{1,}",r"T_3_\d{1,2}"]
+    write_header(file_to_write,simuls_dir)
 
     for rgx in rgx_arr
         graph_and_write_over_file!(dir_names, simuls_dir, file_to_write, rgx)
@@ -137,8 +136,8 @@ end
 
 #= method to plot custom csv file containing mean magn at its corresponding temp =#
 function plot_mean_magn(file_dir::String, dir_to_save::String)
-    temps = []
-    mean_magns = []
+    temps = Float64[]
+    median_magns = Float64[]
 
     # preprocesing custom csv file 
     open(file_dir, "r+") do io
@@ -150,20 +149,23 @@ function plot_mean_magn(file_dir::String, dir_to_save::String)
             stringified_temp = string(substr_temp_and_mean_magn_arr[1])
             stringified_mean_magn = string(substr_temp_and_mean_magn_arr[2])
             temp = utilities.parse_int_float64(Float64,stringified_temp) 
-            mean_magn = utilities.parse_int_float64(Float64,stringified_mean_magn)
+            median_magn = utilities.parse_int_float64(Float64,stringified_mean_magn)
             push!(temps,temp)
-            push!(mean_magns, mean_magn)
+            push!(median_magns, median_magn)
         end
-
+        
         if isfile(file_dir)
-            plt = plot(temps, mean_magns, label = L"\overline{M}_n")
+            plt = plot(temps, median_magns, label = L"\overline{M}_n")
             ylims!(0.0, 1.0)
             xlims!(0,3.5)
             vline!(plt, [Ising.CRITICAL_TEMP, Ising.CRITICAL_TEMP], label=L"T_c", linewidth=1, fillalpha=0.02)
             xlabel!(L"T")
             ylabel!("mean magnetization")
             savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory 
-        end 
+        end
+        
+        println(temps)
+        println(median_magns)
     end    
 end
 end #end of modules

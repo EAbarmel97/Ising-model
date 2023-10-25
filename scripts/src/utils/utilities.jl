@@ -2,7 +2,7 @@ module utilities
 export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS, replace_with_dict
 export median_value, get_ARGS
 export create_simulation_sub_dir,create_fourier_dir,create_automated_simulations_dir_if_not_exists,create_simulations_dir_if_not_exists,create_graphs_directories,filter_directory_names
-export count_runs_in_dir
+export count_runs_in_dir, count_number_of_directories_maching_rgx
 
 using  Statistics
 
@@ -288,19 +288,22 @@ function create_automated_graphs_dir_if_not_exists()
 end
 
 # Function 1: Create Graphs Directories
-function create_graphs_directories()    
-    create_graphs_dir_if_not_exits()
-    create_automated_graphs_dir_if_not_exists()   
+function create_graphs_directories(simuls_dir::String)
+    if contains(simuls_dir,"automated")
+        create_automated_graphs_dir_if_not_exists()
+    else       
+        create_graphs_dir_if_not_exits()
+    end       
 end
 
 # Function 4: Create Temperature Directory
 function create_temperature_directory(at_temp::String, simuls_dir::String)
-    if contains(simuls_dir, "/automated/")
-        at_temp_dir = joinpath(AUTOMATED_GRAPHS_DIR, at_temp)
-        mkpath(at_temp_dir)
+    if contains(simuls_dir, "automated")
+        #= at_temp_dir = joinpath(AUTOMATED_GRAPHS_DIR, at_temp) =#
+        mkpath(joinpath(AUTOMATED_GRAPHS_DIR, at_temp))
     else
-        at_temp_dir = joinpath(GRAPHS_DIR, at_temp)
-        mkpath(at_temp_dir)
+        #= at_temp_dir = joinpath(GRAPHS_DIR, at_temp) =#
+        mkpath(joinpath(GRAPHS_DIR, at_temp))
     end
 end
 
@@ -337,6 +340,10 @@ end
 function count_runs_in_dir(simuls_dir::String, aux_dir_name::String)::Int64
     temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization") #abs path to the simulations at a given temp 
     return length(readdir(temp_abs_dir)) #number of runs contained in a given simulations dir
+end
+
+function count_number_of_directories_maching_rgx(dir_names::Array{String},rgx::Regex)
+    return length(filter_directory_names(dir_names,rgx))
 end
 
 end #end of module
