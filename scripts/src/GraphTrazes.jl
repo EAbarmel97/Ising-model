@@ -66,6 +66,7 @@ end
 # Function 6: Get Temperatures
 function add_temperature_median_magn(aux_dir_name,temperatures_median_magn)
     num_runs = length(readdir(temp_abs_dir))
+    
     aux_temp = replace(aux_dir_name, "simulations_T_" => "", "_" => ".")
     temp = utilities.parse_int_float64(Float64, aux_temp)
 

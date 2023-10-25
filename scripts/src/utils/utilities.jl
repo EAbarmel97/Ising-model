@@ -182,7 +182,7 @@ function get_default_temperature_array()::Array{Float64}
     push_arith_progression!(0.0,1.0,0.1,default_array)
     push_arith_progression!(1.0,2.2,0.1,default_array)
     push_arith_progression!(2.21,2.26,0.01,default_array)
-    push!(default_array,ising.CRITICAL_TEMP)
+    push!(default_array,Ising.CRITICAL_TEMP)
     push_arith_progression!(2.27,2.5,0.01,default_array)
     push_arith_progression!(2.6,3.5,0.01,default_array)
 
