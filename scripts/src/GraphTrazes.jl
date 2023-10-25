@@ -91,6 +91,12 @@ function write_over_file_from_dict!(filtered_array::AbstractArray,file_to_write:
     temperatures = sort!(collect(keys(temperatures_median_magn)))
     for i in eachindex(filtered_array)
         temp = temperatures[i]
+
+        if i != length(filtered_array)
+        else
+            str_to_append = string("$temp,", temperatures_median_magn[temp]) 
+        end
+        
         open(file_to_write, "a+") do io 
             str_to_append = string("$temp,", temperatures_median_magn[temp],"\n")    
             write(io, str_to_append) 
@@ -127,8 +133,9 @@ end
 
 function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::AbstractString, file_to_write::AbstractString)
     rgx_arr = [r"T_0_\d{1,2}",r"T_1_\d{1,2}",r"T_2_\d{1,}",r"T_3_\d{1,2}"]
+    
     write_header(file_to_write,simuls_dir)
-
+    
     for rgx in rgx_arr
         graph_and_write_over_file!(dir_names, simuls_dir, file_to_write, rgx)
     end    

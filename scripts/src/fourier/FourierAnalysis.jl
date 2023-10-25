@@ -1,4 +1,4 @@
-module fourierAnalysis
+module FourierAnalysis
 export  compute_rfft, compute_psd, write_rfft, plot_psds
 
 using FFTW

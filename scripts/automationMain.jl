@@ -52,9 +52,9 @@ println()
 println("saving simulations under dir: $CURR_DIR")
 
 function do_model(INIT_MAGN, TEMP, N_GRID)
-   ising_model = isingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
-   ising_model.flip_strategy = isingMethods.RANDOM_STRATEGY
-   ising_model.trans_dynamics = isingMethods.METROPOLIS_DYNAMICS
+   ising_model =IsingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
+   ising_model.flip_strategy =IsingMethods.RANDOM_STRATEGY
+   ising_model.trans_dynamics =IsingMethods.METROPOLIS_DYNAMICS
    
    ROUNDED_TEMP = round(TEMP, digits=2)
    str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"
@@ -68,10 +68,10 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
    mkpath(global_magnetization_aux_dir)
 
    for run in 1:NUM_RUNS
-      isingMethods.reset_stats(ising_model)
-      isingMethods.set_magnetization(INIT_MAGN, ising_model) #populates the spin grid with a given initial magnetization 
-      isingMethods.update_magnetization(ising_model) #updates global magnetization 
-      isingMethods.update_energy(ising_model) #updates global energy
+     IsingMethods.reset_stats(ising_model)
+     IsingMethods.set_magnetization(INIT_MAGN, ising_model) #populates the spin grid with a given initial magnetization 
+     IsingMethods.update_magnetization(ising_model) #updates global magnetization 
+     IsingMethods.update_energy(ising_model) #updates global energy
 
       #= Creation of generic .txt files containing global magnetization time series =#
       generic_magnetization_file_name = global_magnetization_aux_dir * "/global_magnetization_r$(run)" * ".txt"
@@ -83,7 +83,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
       close(generic_magnetization_file)
 
       for generation in 1:NUM_GENERATIONS
-         isingMethods.do_generation(ising_model)
+        IsingMethods.do_generation(ising_model)
          setfield!(ising_model, :cur_gen, generation)
 
          generic_magnetization_file = open(generic_magnetization_file_name, "a+")
@@ -91,7 +91,7 @@ function do_model(INIT_MAGN, TEMP, N_GRID)
          close(generic_magnetization_file)
 
          if generation == NUM_GENERATIONS
-            isingMethods.do_generation(ising_model)
+           IsingMethods.do_generation(ising_model)
             setfield!(ising_model, :cur_gen, generation)
 
             generic_magnetization_file = open(generic_magnetization_file_name, "a+")
