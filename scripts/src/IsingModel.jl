@@ -9,7 +9,7 @@ using .IsingMethods: display, reset_stats, compute_energy_cell, update_energy, u
 using .IsingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy, set_flip_strategy_and_transition_dynamics
 
 include("utils/utilities.jl")
-using .utilities: create_automated_simulations_dir_if_not_exists, create_simulations_dir_if_not_exists
+using .utilities: create_simulations_dirs_if_not_exist
 
 function do_model(init_magn::Float64, temp::Float64, n_grid::Float64, write_evol_array::Bool=false, is_automated::Bool=true)
     if is_automated

@@ -258,6 +258,14 @@ function create_simulations_dir_if_not_exists()
     end
 end
 
+function create_simulations_dirs_if_not_exit(is_automated::Bool)
+    if is_automated
+        create_automated_simulations_dir_if_not_exists()
+    else
+        create_simulations_dir_if_not_exists()
+    end
+end
+
 function create_simulation_sub_dir(temp::Float64,is_automated::Bool)::String
     ROUNDED_TEMP = round(temp, digits=2)
     str_temp = replace("$(ROUNDED_TEMP)", "." => "_") #stringified temperature with "." replaced by "_"

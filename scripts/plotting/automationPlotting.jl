@@ -8,29 +8,14 @@ using .fourierAnalysis: write_rfft
 include("../src/utils/paths.jl")
 
 #auxiliary file directory definitions
-
 const AUTOMATED_SIMULS_DIR_NAMES = readdir(AUTOMATED_SIMULS_DIR)
-
-#= regex'es =# 
-rgx0 = r"T_0_\d{1,2}"
-rgx1 = r"T_1_\d{1,2}"
-rgx2 = r"T_2_\d{1,}"
-rgx3 = r"T_3_\d{1,2}"
 
 #= file manipulations =#
 touch("mean_magn_automated.txt") #creation of file containing all mean global magnetization
-file_to_write_over = joinpath("mean_magn_automated.txt")
+file_to_write_over = joinpath("median_magn_automated.txt")
 
-#writing headers over file
-file = open("mean_magn_automated.txt","w+")
-write(file,"temp,mean_magn\n")
-close(file)
-
-#= plotting each temperature group and appending it over the file mean_magn_automated.txt =#
-GraphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS_DIR,file_to_write_over,rgx0)
-GraphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS_DIR,file_to_write_over,rgx1)
-GraphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS_DIR,file_to_write_over,rgx2)
-GraphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS_DIR,file_to_write_over,rgx3)
+#= plotting each temperature group and appending it over the file median_magn_automated.txt =#
+GraphTrazes.graph_and_write_over_file!(AUTOMATED_SIMULS_DIR_NAMES,AUTOMATED_SIMULS_DIR,file_to_write_over)
 
 #= ploting mean magnetization vs temperature =#
-graphTrazes.plot_mean_magn("mean_magn_automated.txt", "mean_magn_automated.pdf")
+graphTrazes.plot_mean_magn("median_magn_automated.txt", "median_magn_automated.pdf")

@@ -6,7 +6,7 @@ using .IsingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEG
 using .IsingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization, randomize, set_magnetization
 using .IsingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 
-include("../scripts/src/utilities.jl")
+include("src/utils/utilities.jl")
 using .utilities: parse_int_float64, get_array_from_txt
 
 include("../scripts/src/Exceptions.jl")

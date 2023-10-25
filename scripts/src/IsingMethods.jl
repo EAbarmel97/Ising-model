@@ -6,7 +6,7 @@ export do_generation, do_generation_and_write_ising_model_prop_over_file, write_
 include("../src/Ising.jl")
 using .Ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
 
-include("utilities.jl")
+include("utils/utilities.jl")
 using .utilities: swap!
 
 using Random 

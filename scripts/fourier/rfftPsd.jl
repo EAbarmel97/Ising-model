@@ -1,17 +1,12 @@
 include("../src/fourier/fourierAnalysis.jl")
 using .fourierAnalysis: compute_rfft, compute_psd, sampling_freq_arr, plot_psd, create_order_coef_dir_and_file
 
-include("../src/utilities.jl")
+include("../src/utils/utilities.jl")
 using .utilities: get_array_from_txt, parse_int_float64
 
-#= auxiliary constants  =#
-const CURR_DIR = pwd()
-const AUTOMATED_SIMULS_DIR = joinpath(CURR_DIR, "all_simulations","automated/")
-const AUTOMATED_PSD_GRAPHS = joinpath("graphs","automated","psd")
-const ALL_AUTOMATED_SIMULS_DIRS = readdir(AUTOMATED_SIMULS_DIR)
-const ALL_GLOBAL_MAGN_DIRS = joinpath.(AUTOMATED_SIMULS_DIR, ALL_AUTOMATED_SIMULS_DIRS, "magnetization/")
-const ALL_AUTOMATED_RFFTS = joinpath.(AUTOMATED_SIMULS_DIR, ALL_AUTOMATED_SIMULS_DIRS, "fourier/")
+include("../src/utils/paths.jl")
 
+const ALL_AUTOMATED_SIMULS_DIRS = readdir(AUTOMATED_SIMULS_DIR)
 #=
 number of runs equals the number of files in ../magnetization/ and is the same for each simulations_T_x_y_z/magnetization dir
 so the first simulation directory is choosen 
