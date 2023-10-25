@@ -1,17 +1,12 @@
-include("../src/fourier/fourierAnalysis.jl")
-using .fourierAnalysis: compute_rfft, compute_psd, sampling_freq_arr, plot_psd, create_order_coef_dir_and_file
+include("../src/fourier/FourierAnalysis.jl")
+using .FourierAnalysis: compute_rfft, compute_psd, sampling_freq_arr, plot_psd, create_order_coef_dir_and_file
 
-include("../src/utilities.jl")
+include("../src/utils/utilities.jl")
 using .utilities: get_array_from_txt, parse_int_float64
 
-#= auxiliary constants  =#
-const CURR_DIR = pwd()
-const AUTOMATED_SIMULS_DIR = joinpath(CURR_DIR, "all_simulations","automated/")
-const AUTOMATED_PSD_GRAPHS = joinpath("graphs","automated","psd")
-const ALL_AUTOMATED_SIMULS_DIRS = readdir(AUTOMATED_SIMULS_DIR)
-const ALL_GLOBAL_MAGN_DIRS = joinpath.(AUTOMATED_SIMULS_DIR, ALL_AUTOMATED_SIMULS_DIRS, "magnetization/")
-const ALL_AUTOMATED_RFFTS = joinpath.(AUTOMATED_SIMULS_DIR, ALL_AUTOMATED_SIMULS_DIRS, "fourier/")
+include("../src/utils/paths.jl")
 
+const ALL_AUTOMATED_SIMULS_DIRS = readdir(AUTOMATED_SIMULS_DIR)
 #=
 number of runs equals the number of files in ../magnetization/ and is the same for each simulations_T_x_y_z/magnetization dir
 so the first simulation directory is choosen 
@@ -53,7 +48,7 @@ for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
             temp = utilities.parse_int_float64(Float64,str_temp)
         
             #rfft is saved  as a .txt in ../automated/simulations_T_x_y_z/fourier/
-            fourierAnalysis.write_rfft(rfft,fourier_dir,temp,run)        
+            FourierAnalysis.write_rfft(rfft,fourier_dir,temp,run)        
         end
     end
 
@@ -62,7 +57,7 @@ for i in eachindex(ALL_AUTOMATED_SIMULS_DIRS)
 
     if !isfile(psd_plot_file_abs_path)
         #plotting the power density spectra
-        fourierAnalysis.plot_psd(simul_dir_name,AUTOMATED_PSD_GRAPHS)      
+        FourierAnalysis.plot_psd(simul_dir_name,AUTOMATED_PSD_GRAPHS)      
     end
 
     #= TO DO: implement logic to obtain the order coefficient β =#

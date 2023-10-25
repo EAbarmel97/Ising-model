@@ -1,20 +1,28 @@
-module isingMethods
+module IsingMethods
 export display,reset_stats,compute_energy_cell,update_energy,update_magnetization,randomize,set_magnetization,update_ising_model
 export try_cell_flip,get_cell_coords,get_cell_id
 export do_generation, do_generation_and_write_ising_model_prop_over_file, write_spin_grid, choose_flip_strategy, choose_trans_dynamics, set_flip_strategy_and_transition_dynamics
 
-include("../src/ising.jl")
-using .ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
-export isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
+include("../src/Ising.jl")
+using .Ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
 
-include("utilities.jl")
+include("utils/utilities.jl")
 using .utilities: swap!
 
 using Random 
 Random.seed!(1234)
 
-#=Unicode representation of the spin grid=#
-function display(ising_model :: isingModel)
+"""
+Unicode representation of the spin grid.
+
+Example: for a 3x3 array the function could print on terminal something like this
+
+++-
+-++
+---
+
+"""
+function display(ising_model::isingModel)::Nothing
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
             if ising_model.grid[i,j] === 1
@@ -24,11 +32,13 @@ function display(ising_model :: isingModel)
             end     
         end
         println()
-    end    
+    end 
+    
+    return nothing
 end
 
 #= Method with returns a  stringified version of the spin grid=#
-function display(ising_model :: isingModel, generation :: Int ) :: String
+function display(ising_model::isingModel, generation::Int )::String
     str = "gen $generation:\n"
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
@@ -39,25 +49,32 @@ function display(ising_model :: isingModel, generation :: Int ) :: String
             end     
         end
         str = str*"\n" #line break
-    end 
+    end
+
     return str   
 end
 
-#=Resets statistics=#
-function reset_stats(ising_model :: isingModel)
+"""
+    reset_stats(ising_model::isingModel)::nothin
+
+resets the fields global_energy, global_mean, global_variance, global_magnetization to be all 0's
+"""
+function reset_stats(ising_model::isingModel)::Nothing
     fields_names_to_reset = ["global_energy","global_mean","global_variance",
     "global_magnetization"]
 
-     for (i,field_name_string) in enumerate(fields_names_to_reset)
+    for (i,field_name_string) in enumerate(fields_names_to_reset)
         field_name = Symbol(field_name_string) #converts string to Symbol 
         setfield!(ising_model,field_name,0.0)
-     end      
+    end
+    
+    return nothing
 end
 
 
 #=Returns the energy of a cell
 The grid wraps around at the edges (toroidal symmetry).=#
-function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel) :: Float64 
+function compute_energy_cell(i::Int, j::Int, ising_model::isingModel)::Float64 
     energy = 0
     
     if i === 1 
@@ -89,7 +106,7 @@ function compute_energy_cell(i :: Int, j :: Int,ising_model :: ising.isingModel)
 end
 
 #=Computes the  mean energy of the whole grid of spins =#
-function update_energy(ising_model :: isingModel)
+function update_energy(ising_model::isingModel)
     g_energy = 0
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
@@ -102,7 +119,7 @@ function update_energy(ising_model :: isingModel)
 end
 
 #=Computes the mean magnetization of the whole spin grid=#
-function update_magnetization(ising_model :: isingModel)
+function update_magnetization(ising_model::isingModel)
     g_magnetization = 0
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
@@ -115,7 +132,7 @@ function update_magnetization(ising_model :: isingModel)
 end
 
 #=Generates random changes in the spin grid but conserving a given magnetization=#
-function set_magnetization(magn :: Float64, ising_model :: isingModel)
+function set_magnetization(magn::Float64, ising_model::isingModel)
     spin_grid = ising_model.grid
     p = (1+magn)/2.0
     
@@ -139,7 +156,7 @@ function update_ising_model(ising_model::isingModel,init_magn::Float64)
 end
 
 #=Randomly populates the spin grid=#
-function randomize(ising_model :: isingModel)
+function randomize(ising_model::isingModel)
     spin_grid = ising_model.grid
     rn = 0 
     for i in 1:ising_model.NGRID
@@ -156,20 +173,20 @@ function randomize(ising_model :: isingModel)
 end
 
 #=Method for trying a flip spin=#
-    function try_cell_flip(i :: Int, j :: Int, ising_model :: isingModel)
+function try_cell_flip(i::Int, j::Int, ising_model::isingModel)
     g_energy = 0
     prob = 0
     old_E = compute_energy_cell(i,j,ising_model)
     new_E = -old_E #Always true since E_i = s_i*(sum_neighs s_n)
     ΔE = new_E - old_E 
-    if ising_model.trans_dynamics === ising.METROPOLIS_DYNAMICS
+    if ising_model.trans_dynamics === Ising.METROPOLIS_DYNAMICS
         #Metropolis dynamics
         if ΔE <= 0
             prob = 1 #energy is lower, spin is flipped 
         else
             prob = exp(-ΔE/ising_model.TEMP) #termal flip 
         end
-    elseif ising_model.trans_dynamics === ising.GLAUBER_DYNAMICS
+    elseif ising_model.trans_dynamics === Ising.GLAUBER_DYNAMICS
         #glauber dynamics
         prob = 1/(1 + exp(ΔE/ising_model.TEMP))   
     end  
@@ -208,21 +225,21 @@ in the set (0,y] i.e is the same as the % operator but with an offset of 1
 
 #= Given the id that uniquely determines a cell in the spin grid, the function outputs the (i,j) 
 coordinates inside the grid location =#
-function get_cell_coords( id :: Int,ising_model :: isingModel) :: Array{Int,1}
+function get_cell_coords(id::Int, ising_model::isingModel)::Array{Int,1}
     i = mod1(id ,ising_model.NGRID)
     j = cld(id,ising_model.NGRID)
     return [i,j] 
 end
 
 #=Provided the (x,y) coordinates of a cell gives the id representation of a spin at location (x,y)=#
-function get_cell_id(i :: Int, j :: Int, ising_model :: isingModel) :: Int
+function get_cell_id(i::Int, j::Int, ising_model::isingModel)::Int
     return i + (j-1)*ising_model.NGRID   
 end
 
 #=Applies a flip cell spins to each spin in teh spin grid=#
 function do_generation(ising_model :: isingModel)
     # with strategy it may happen that not all cells get flipped 
-    if ising_model.flip_strategy === ising.RANDOM_STRATEGY
+    if ising_model.flip_strategy === Ising.RANDOM_STRATEGY
         for temp in 1:ising_model.NCELLS #this loops from 1 to N² (the number of cells )
             i = mod1(rand(Int),ising_model.NGRID)
             j = mod1(rand(Int),ising_model.NGRID)
@@ -230,7 +247,7 @@ function do_generation(ising_model :: isingModel)
         end
     #all cells are granted to be flipped at least once (Fisher-Yates algorithm)
     #= TO DO: debug method =#
-    elseif ising_model.flip_strategy === ising.SHUFFLE_STRATEGY
+    elseif ising_model.flip_strategy === Ising.SHUFFLE_STRATEGY
         ising_model.flip_order = 1:(ising_model.NGRID*ising_model.NGRID)
         fliping_order = ising_model.flip_order
         for temp in 1:ising_model.NCELLS
@@ -246,7 +263,7 @@ function do_generation(ising_model :: isingModel)
             try_cell_flip(array_coords[1], array_coords[2], ising_model)
         end
     
-    elseif ising_model.flip_strategy === ising.SEQUENTIAL_STRATEGY
+    elseif ising_model.flip_strategy === Ising.SEQUENTIAL_STRATEGY
         for i in 1:ising_model.NGRID
             for j in 1:ising_model.NGRID
                 try_cell_flip(i,j,ising_model) #sequential flip
@@ -264,7 +281,7 @@ function write_ising_model_prop_initial_state_over_file(ising_model::isingModel,
 end
 
 function do_generation_and_write_ising_model_prop_over_file(ising_model::isingModel,file_to_write::String,prop_name::Symbol,generation::Int64)
-    isingMethods.do_generation(ising_model)
+    do_generation(ising_model)
     setfield!(ising_model, :cur_gen, generation)
     prop = string(getfield(ising_model,prop_name))
 
@@ -277,7 +294,7 @@ function do_generation_and_write_ising_model_prop_over_file(ising_model::isingMo
 end
 
 function do_generation_and_write_ising_model_prop_over_file(ising_model::isingModel,file_to_write::String,prop_name::Symbol,generation::Int64)
-    isingMethods.do_generation(ising_model)
+    do_generation(ising_model)
     setfield!(ising_model, :cur_gen, generation)
     prop = string(getfield(ising_model,prop_name))
 
@@ -290,7 +307,7 @@ function do_generation_and_write_ising_model_prop_over_file(ising_model::isingMo
 end
 
 function write_ising_model_sprin_grid(ising_model::isingModel,file_to_write::String,generation::Int64)
-    prop = string(isingMethods.display(ising_model, ising_model.cur_gen))
+    prop = string(display(ising_model, ising_model.cur_gen))
     
     open(file_to_write, "a+") do file_to_write
         if generation != ARGS[6]
@@ -302,7 +319,7 @@ end
 
 #=Method which allows the user to select the a flip strategy=#
 function choose_flip_strategy(ising_model :: isingModel)
-    options_to_choose = Dict("1" => ising.RANDOM_STRATEGY, "2" => ising.SHUFFLE_STRATEGY, "3" => ising.SEQUENTIAL_STRATEGY)
+    options_to_choose = Dict("1" => Ising.RANDOM_STRATEGY, "2" => Ising.SHUFFLE_STRATEGY, "3" => Ising.SEQUENTIAL_STRATEGY)
 
     while true 
         println("Choose 1 of the 3 possible flip strategies")
@@ -331,7 +348,7 @@ end
 
 #=Method for selecting a transition dynamics=#
 function choose_trans_dynamics(ising_model :: isingModel)
-    options_to_choose = Dict("1" => ising.METROPOLIS_DYNAMICS, "2" => ising.GLAUBER_DYNAMICS)
+    options_to_choose = Dict("1" => Ising.METROPOLIS_DYNAMICS, "2" => Ising.GLAUBER_DYNAMICS)
 
     while true 
         println("Choose a transition dynamics")
@@ -359,8 +376,8 @@ end
 
 function set_flip_strategy_and_transition_dynamics(ising_model::isingModel,is_automated::Bool)
     if is_automated
-        ising_model.flip_strategy = ising.RANDOM_STRATEGY
-        ising_model.trans_dynamics = ising.METROPOLIS_DYNAMICS
+        ising_model.flip_strategy = Ising.RANDOM_STRATEGY
+        ising_model.trans_dynamics = Ising.METROPOLIS_DYNAMICS
     else
         choose_flip_strategy(ising_model)
         choose_trans_dynamics(ising_model)

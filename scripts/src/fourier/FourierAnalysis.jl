@@ -1,19 +1,17 @@
-module fourierAnalysis
+module FourierAnalysis
 export  compute_rfft, compute_psd, write_rfft, plot_psds
 
 using FFTW
 using Plots
 using LaTeXStrings
 
-include("../ising.jl")
-using .ising: CRITICAL_TEMP
+include("../Ising.jl")
+using .Ising: CRITICAL_TEMP
 
-include("../utilities.jl")
+include("../utils/utilities.jl")
 using .utilities: get_array_from_txt
 
-#= Auxiliray constants =#
-const PSD_GRAPHS =  "graphs/psd"
-const AUTOMATED_PSD_GRAPHS =  "graphs/automated/psd"
+include("../utils/paths.jl")
 
 """
     compute_rfft(file_path::AbstractString)::Array{ComplexF64,1}
@@ -27,15 +25,14 @@ function compute_rfft(file_path::AbstractString)::Array{ComplexF64,1}
 end 
 
 #= Function to write over a .txt file a vector with the rfft of a signal(time series) =#
-function write_rfft(arr :: Array{ComplexF64,1}, destination_dir :: AbstractString, 
-    at_temp :: Float64, run :: Int)
+function write_rfft(arr::Array{ComplexF64,1}, destination_dir::String, at_temp::Float64, run::Int64)
 
-    if at_temp != ising.CRITICAL_TEMP    
+    if at_temp != Ising.CRITICAL_TEMP    
         rounded_temp = round(at_temp, digits=2)
         str_rounded_temp = replace("$rounded_temp","." => "_")
         file_name = "$destination_dir/rfft_global_magnetization_$(str_rounded_temp)_r$run.txt"
     else
-        str_Tc_temp = replace("$at_temp","$(ising.CRITICAL_TEMP)" => "Tc",)
+        str_Tc_temp = replace("$at_temp","$(Ising.CRITICAL_TEMP)" => "Tc",)
         file_name = "$destination_dir/rfft_global_magnetization_$(str_Tc_temp)_r$run.txt"
     end
 
@@ -164,8 +161,10 @@ function psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{F
         rfft_path = joinpath(rffts_at_temp,rfft_file_name)#abs path to the strigified file  for the rfft 
 
         #fetching and appending psd to the array containg the power spectra densities
-        rfft = utilities.get_array_from_txt(Complex{Float64},rfft_path) #rfft of the M_n with initial temperature x_y_z
-        deleteat!(rfft,(1,length(rfft))) #discarting the DC associated entry and the last element array 
+        rfft = utilities.get_array_from_txt(Complex{Float64},rfft_path)
+        #rfft of the M_n with initial temperature x_y_z
+        rfft = rfft[2:end-1]#discarting the DC associated entry and the last element array 
+        
         rfft = convert.(ComplexF64,rfft) #casting array to ComplexF64
         
         psd = compute_psd(rfft) #array with the psd associated with RFFT[M_n]
@@ -314,7 +313,6 @@ end
 Plots all psd in log-log superimposed on a same canvas, highlighting the mean psd in red, and the linear fit as well
 """
 function plot_psd(temp_name_dir::AbstractString,destination_dir::AbstractString)
-    
     simuls_dir = determine_simulation_dir(destination_dir)
 
     create_graphs_temp_sub_dir(temp_name_dir,destination_dir)

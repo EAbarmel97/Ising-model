@@ -1,4 +1,4 @@
-module ising
+module Ising
 export isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS 
 #The critical temperature is Tc = 2/ln(1+sqrt(2)) in units of J/k, with k beeing the Boltzman constant
 const CRITICAL_TEMP = 2.26918531421302
