@@ -64,13 +64,12 @@ function save_graphs(temp_abs_dir::String, aux_dir_name::String, run::Int64, at_
 end
 
 # Function 6: Get Temperatures
-function add_temperature_median_magn_to_dict!(aux_dir_name,temperatures_median_magn)
-    
-    num_runs = length(readdir(temp_abs_dir))
-    
+function add_temperature_median_magn_to_dict!(aux_dir_name,temperatures_median_magn,simuls_dir)
+    num_runs = count_runs_in_dir(simuls_dir,aux_dir_name)
     aux_temp = replace(aux_dir_name, "simulations_T_" => "", "_" => ".")
     temp = utilities.parse_int_float64(Float64, aux_temp)
-
+    
+    temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization")
     median_per_temp = calculate_median_magnetization(temp_abs_dir, num_runs)
     temperatures_median_magn[temp] = "$median_per_temp"
 end
@@ -117,8 +116,9 @@ function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::Abstra
         at_temp = replace(aux_dir_name, "simulations_" => "")
         utilities.create_temperature_directory(at_temp, simuls_dir)
 
-        add_temperature_median_magn_to_dict!(aux_dir_name,temperatures_median_magn)
-
+        add_temperature_median_magn_to_dict!(aux_dir_name,temperatures_median_magn,simuls_dir)
+        
+        temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization")
         for run in 1:num_runs
             save_graphs(temp_abs_dir, aux_dir_name, run, at_temp)
         end

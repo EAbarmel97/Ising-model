@@ -12,5 +12,5 @@ const AUTOMATED_GRAPHS_DIR = joinpath(GRAPHS_DIR, "automated")
 const AUTOMATED_PSD_GRAPHS = joinpath(AUTOMATED_GRAPHS_DIR,"psd")
 
 #= fourier analysis =#
-const ALL_GLOBAL_MAGN_DIRS = joinpath.(AUTOMATED_SIMULS_DIR, ALL_AUTOMATED_SIMULS_DIRS, "magnetization")
-const ALL_AUTOMATED_RFFTS = joinpath.(AUTOMATED_SIMULS_DIR, ALL_AUTOMATED_SIMULS_DIRS, "fourier")
+const ALL_GLOBAL_MAGN_DIRS = joinpath.(AUTOMATED_SIMULS_DIR, readdir(AUTOMATED_SIMULS_DIR), "magnetization")
+const ALL_AUTOMATED_RFFTS = joinpath.(AUTOMATED_SIMULS_DIR, readdir(AUTOMATED_SIMULS_DIR), "fourier")
