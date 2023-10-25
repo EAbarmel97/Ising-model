@@ -127,14 +127,14 @@ function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::Abstra
     write_over_file!(file_to_write,temperatures_median_magn,simuls_dir)
 end
 
-
 function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::AbstractString, file_to_write::AbstractString)
     rgx_arr = [r"T_0_\d{1,2}",r"T_1_\d{1,2}",r"T_2_\d{1,}",r"T_3_\d{1,2}"]
-    
+
     for rgx in rgx_arr
         graph_and_write_over_file!(dir_names, simuls_dir, file_to_write, rgx)
     end    
 end
+
 #= method to plot custom csv file containing mean magn at its corresponding temp =#
 function plot_mean_magn(file_dir::String, dir_to_save::String)
     temps = []
