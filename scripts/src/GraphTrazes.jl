@@ -64,7 +64,8 @@ function save_graphs(temp_abs_dir::String, aux_dir_name::String, run::Int64, at_
 end
 
 # Function 6: Get Temperatures
-function add_temperature_median_magn(aux_dir_name,temperatures_median_magn)
+function add_temperature_median_magn_to_dict!(aux_dir_name,temperatures_median_magn)
+    
     num_runs = length(readdir(temp_abs_dir))
     
     aux_temp = replace(aux_dir_name, "simulations_T_" => "", "_" => ".")
@@ -74,7 +75,19 @@ function add_temperature_median_magn(aux_dir_name,temperatures_median_magn)
     temperatures_median_magn[temp] = "$median_per_temp"
 end
 
-function write_over_file!(file_to_write::String,temperatures_median_magn::Dict{Float64, String})
+function write_header(file_name::String,simuls_dir::String)
+    open(file_name,"w+") do io
+        if contains(simuls_dir,"/automated/")
+            write(io,"temp,median_magn_automated\n") 
+        else
+            write(io,"temp,median_magn_automated\n") 
+        end 
+    end   
+end 
+
+function write_over_file!(file_to_write::String,temperatures_median_magn::Dict{Float64, String},simuls_dir::String)
+    write_header(file_to_write,simuls_dir)
+
     temperatures = sort!(keys(temperatures_median_magn))
 
     for i in eachindex(filtered_array)
@@ -104,14 +117,14 @@ function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::Abstra
         at_temp = replace(aux_dir_name, "simulations_" => "")
         utilities.create_temperature_directory(at_temp, simuls_dir)
 
-        add_temperature_median_magn(aux_dir_name,temperatures_median_magn)
+        add_temperature_median_magn_to_dict!(aux_dir_name,temperatures_median_magn)
 
         for run in 1:num_runs
             save_graphs(temp_abs_dir, aux_dir_name, run, at_temp)
         end
     end
     
-    write_over_file!(file_to_write,temperatures_median_magn)
+    write_over_file!(file_to_write,temperatures_median_magn,simuls_dir)
 end
 
 
