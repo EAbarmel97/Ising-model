@@ -192,20 +192,44 @@ function psd_graph_file_path(temp_dir_name::String,destination_dir::String)::Str
     return full_file_path
 end
 
-function psd_graph_file_path(destination_dir::String,beta1::Float64)::String
+"""
+    determines_noise_or_movement(beta1::Float64)::String
+
+returns a string corresponding to the classification of the simulated correlated noise or movement depending on the 
+values of the beta1 linear fit parameter 
+"""
+function determines_noise_or_movement(beta1::Float64)::String
     if beta1 == 0.0
         description = "white noise"
+    end
+    
+    if 0.0 < beta1 < 1.0
+        description = "fractal noise with beta = $beta1"
     end     
     
     if beta1 == 1.0
         description = "pink noise"
     end
 
+    if 1.0 < beta1 < 2.0
+        description = "fractal brownian motion with beta = $beta1"
+    end   
+
     if beta1 == 2.0
         description = "brownian motion"
-    end    
+    end
+    
+    return description
+end
 
-    full_file_path = joinpath(destination_dir,"psd_$(description).pdf")
+"""
+    psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
+
+Outputs the file path where the psd associated of the simulated time series will be saved 
+"""
+function psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
+    
+    full_file_path = joinpath(destination_dir,"psd_beta0_$(round(beta0,digits=2))_beta1_$(round(beta1,digits=2)).pdf")
 
     return full_file_path
 end
@@ -237,7 +261,7 @@ function intercept_and_exponent_from_log_psd(f::Array{Float64,1},average_psd::Ar
 end
 
 function create_exponent_dir_and_file()
-    exponent_dir = joinpath("graphs/automated","exponent")
+    exponent_dir = joinpath("graphs","automated","exponent")
     exponent_file_path = joinpath(exponent_dir,"exponent.txt")
 
     if !isdir(exponent_dir)
@@ -259,9 +283,29 @@ function write_exponent(exponent::Float64,num_runs::Int64)
     end       
 end
 
-#= TO DO: implement logic for plotting the beta1 (exponent) parameter of an linear model fitted to a log PSD =#
-function plot_order_coef()
+"""
+
+"""
+function plot_log_PSD_exponent(log_PSD_exponent_file_path::String)
+
+    if !isfile(log_PSD_exponent_file_path)
+
+        f = sampling_freq_arr()
+        #plot styling
+        plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
+        
+        plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,lc=:red)
+        #linear fit
+        plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+        
     
+        title!("PSD for ts with init temp $(str_temp)")
+        xlabel!(L"f")
+        ylabel!("power density spectra")
+        
+        #file saving
+        savefig(plt, full_file_path)
+    end
 end
 
 """
