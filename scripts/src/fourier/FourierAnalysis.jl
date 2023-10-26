@@ -77,8 +77,8 @@ function sampling_freq_arr(file_path::String)::Array{Float64,1}
 end
 
 function sampling_freq_arr(N::Int64)
-    freq_arr= rfftfreq(N)
-    freq_arr = convert.(Float64,sampling_freq_arr) 
+    freq_arr = rfftfreq(N)
+    freq_arr = convert.(Float64,freq_arr) 
 
     deleteat!(freq_arr,1)
 
@@ -228,8 +228,12 @@ end
 Outputs the file path where the psd associated of the simulated time series will be saved 
 """
 function psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
+
+    function separate_by_dashes(str::String)::String
+        return replace(str, "." => "_")
+    end
     
-    full_file_path = joinpath(destination_dir,"psd_beta0_$(round(beta0,digits=2))_beta1_$(round(beta1,digits=2)).pdf")
+    full_file_path = joinpath(destination_dir,"psd_beta0_$(separate_by_dashes(string(round(beta0,digits=2))))_beta1_$(separate_by_dashes(string(round(beta1,digits=2)))).pdf")
 
     return full_file_path
 end
@@ -334,7 +338,7 @@ function plot_psd(temp_name_dir::AbstractString,destination_dir::AbstractString)
     if !isfile(full_file_path)
         #plot styling
         plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
-        
+        #
         plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,lc=:red)
         #linear fit
         plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
@@ -355,27 +359,31 @@ end
 
 Plots the psd associated with a complex array of numbers in log-log scale, highlighting the linear fit in black
 """
-function plot_psd(x::Array{ComplexF64,1}, destination_dir::String,beta0::Float64,beta1::Float64)
-    psd = compute_psd(x)
-    
+function plot_psd(x::Array{Float64,1}, destination_dir::String,beta0::Float64,beta1::Float64)
+    rfft_arr = rfft(x)
     f = sampling_freq_arr(length(x))
+
+    psd = compute_psd(rfft_arr)
+    deleteat!(psd,1)
+
+    @show any(iszero,psd)
+    @show length(filter(iszero,psd))
+    @show findall(x-> x==0,psd)
+
     params = intercept_and_exponent_from_log_psd(f,psd)
     
-    full_file_path = psd_graph_file_path(temp_name_dir,destination_dir)
-    
+    full_file_path = psd_graph_file_path(destination_dir,beta0,beta1)
     if !isfile(full_file_path)
         #plot styling
         plt = plot(f,psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
         
         #expected linear fit
-        plot!((x) -> exp10(beta0-beta1*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+        plot!((u) -> exp10(beta0-beta1*log10(u)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
 
         #linear fit
-        plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
-    
-        str_temp = replace(temp_name_dir,"simulations_T_" => "", "_" => ".")
-    
-        title!("PSD for ts with init temp $(str_temp)")
+        plot!((u) -> exp10(params[1] + params[2]*log10(u)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:red)
+        
+        title!("PSD for ts with beta0 = $beta0 and beta1 = $beta1")
         xlabel!(L"f")
         ylabel!("power density spectra")
         
