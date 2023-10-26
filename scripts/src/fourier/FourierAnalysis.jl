@@ -357,12 +357,12 @@ Plots the psd associated with a complex array of numbers in log-log scale, highl
 """
 function plot_psd(x::Array{ComplexF64,1}, destination_dir::String,beta0::Float64,beta1::Float64)
     psd = compute_psd(x)
-
+    
     f = sampling_freq_arr(length(x))
     params = intercept_and_exponent_from_log_psd(f,psd)
     
     full_file_path = psd_graph_file_path(temp_name_dir,destination_dir)
-
+    
     if !isfile(full_file_path)
         #plot styling
         plt = plot(f,psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 

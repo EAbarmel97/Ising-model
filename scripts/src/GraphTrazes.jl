@@ -34,6 +34,22 @@ function save_traze(dir_to_save::String, file_path::String)
     savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
 end
 
+function save_traze(dir_to_save::String, time_series::Array{Float64,1}, beta0::Float64,beta1::Float64)
+    
+    mean = utilities.mean_value(file_path)
+    time_series = utilities.get_array_from_txt(file_path)
+
+    x = collect(0:(length(time_series)-1))
+    
+    plt = plot(x, time_series, label= L"M_n") #plot reference 
+    hline!(plt, [mean, mean], label=L"\overline{M}_n",linewidth=3)
+    #ylims!(-1.0, 1.0)
+    xlims!(0, length(time_series))
+    xlabel!(L"n")
+    ylabel!(L"M_n")
+    savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
+end
+
 # Function 3: Calculate Median Magnetization
 function calculate_median_magnetization(temp_abs_dir::String, num_runs::Int64)
     magnetization_per_run = Float64[]
@@ -48,7 +64,7 @@ function calculate_median_magnetization(temp_abs_dir::String, num_runs::Int64)
 end
 
 # Function 5: Save Graphs
-function save_graphs(temp_abs_dir::String, aux_dir_name::String, run::Int64, at_temp)
+function save_graphs(temp_abs_dir::String, aux_dir_name::String, run::Int64, at_temp::String)
     aux_graph_file_name = replace(aux_dir_name, "simulations_T_" => "magnetization_ts_")
     aux_graph_file_name *= "_r$run.pdf"
 
@@ -63,8 +79,12 @@ function save_graphs(temp_abs_dir::String, aux_dir_name::String, run::Int64, at_
     end
 end
 
-# Function 6: Get Temperatures
-function add_temperature_median_magn_to_dict!(aux_dir_name,temperatures_median_magn,simuls_dir)
+"""
+    add_temperature_median_magn_to_dict!(aux_dir_name::String,temperatures_median_magn::Dict{Float64,String},simuls_dir::String)::Nothing
+
+Adds to a dict storing temp-stringified median magnetization
+"""
+function add_temperature_median_magn_to_dict!(aux_dir_name::String,temperatures_median_magn::Dict{Float64,String},simuls_dir::String)::Nothing
     num_runs = count_runs_in_dir(simuls_dir,aux_dir_name)
     aux_temp = replace(aux_dir_name, "simulations_T_" => "", "_" => ".")
     temp = utilities.parse_int_float64(Float64, aux_temp)
@@ -72,16 +92,26 @@ function add_temperature_median_magn_to_dict!(aux_dir_name,temperatures_median_m
     temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization")
     median_per_temp = calculate_median_magnetization(temp_abs_dir, num_runs)
     temperatures_median_magn[temp] = "$median_per_temp"
+
+    return nothing
 end
 
-function write_header(file_name::String,simuls_dir::String)
+"""
+    write_header(file_name::String,simuls_dir::String)::Nothing
+
+Depending on whether simulations are generated interactively or not, the headers of the file 
+containing the custom csv (as a .txt) are written over such file
+"""
+function write_header(file_name::String,simuls_dir::String)::Nothing
     open(file_name,"w+") do io
         if contains(simuls_dir,"automated")
             write(io,"temp,median_magn_automated\n") 
         else
             write(io,"temp,median_magn\n") 
         end 
-    end   
+    end
+    
+    return nothing
 end
  
 """
@@ -133,7 +163,7 @@ end
 
 function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::AbstractString, file_to_write::AbstractString)
     rgx_arr = [r"T_0_\d{1,2}",r"T_1_\d{1,2}",r"T_2_\d{1,}",r"T_3_\d{1,2}"]
-    
+
     write_header(file_to_write,simuls_dir)
     
     for rgx in rgx_arr
@@ -167,12 +197,9 @@ function plot_mean_magn(file_dir::String, dir_to_save::String)
             xlims!(0,3.5)
             vline!(plt, [Ising.CRITICAL_TEMP, Ising.CRITICAL_TEMP], label=L"T_c", linewidth=1, fillalpha=0.02)
             xlabel!(L"T")
-            ylabel!("mean magnetization")
+            ylabel!("median magnetization")
             savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory 
         end
-        
-        println(temps)
-        println(median_magns)
     end    
 end
 end #end of modules

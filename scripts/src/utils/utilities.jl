@@ -14,7 +14,7 @@ using .Exceptions: NotIntegerException
 
 include("paths.jl")
 
-#= Function for swaping values at diferent index locations returning array =#
+
 function swap!(val1::Int, val2::Int, obj::Union{Array{Float64,1},Array{Int,1}})
     temp = obj[val1]
     obj[val1] = obj[val2]
@@ -345,5 +345,7 @@ end
 function count_number_of_directories_maching_rgx(dir_names::Array{String},rgx::Regex)
     return length(filter_directory_names(dir_names,rgx))
 end
+
+#= Correlated Noise auxiliary functions =#
 
 end #end of module

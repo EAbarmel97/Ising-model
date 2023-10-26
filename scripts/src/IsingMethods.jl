@@ -4,7 +4,7 @@ export try_cell_flip,get_cell_coords,get_cell_id
 export do_generation, do_generation_and_write_ising_model_prop_over_file, write_spin_grid, choose_flip_strategy, choose_trans_dynamics, set_flip_strategy_and_transition_dynamics
 
 include("../src/Ising.jl")
-using .Ising: isingModel,CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
+using .Ising: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS,GLAUBER_DYNAMICS
 
 include("utils/utilities.jl")
 using .utilities: swap!

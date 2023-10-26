@@ -2,9 +2,9 @@ using Random
 Random.seed!(1234)
 
 include("../scripts/src/IsingMethods.jl")
-using . IsingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
-using . IsingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization, randomize, set_magnetization
-using . IsingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
+using .IsingMethods: isingModel, CRITICAL_TEMP, RANDOM_STRATEGY, SHUFFLE_STRATEGY, SEQUENTIAL_STRATEGY, METROPOLIS_DYNAMICS, GLAUBER_DYNAMICS
+using .IsingMethods: display, reset_stats, compute_energy_cell, update_energy, update_magnetization, randomize, set_magnetization
+using .IsingMethods: get_cell_coords, get_cell_id, do_generation, choose_flip_strategy
 
 include("src/utils/utilities.jl")
 using .utilities: parse_int_float64, get_array_from_txt, get_ARGS
@@ -66,7 +66,7 @@ println()
 println("saving simulations under dir: $CURR_DIR")
 
 function do_model(INIT_MAGN, TEMP, N_GRID)
-   ising_model = IsingMethods.isingModel(TEMP, N_GRID) #ising model struct instantiation
+   ising_model = Ising.isingModel(TEMP, N_GRID) #ising model struct instantiation
    ising_model.flip_strategy =  IsingMethods.RANDOM_STRATEGY
    ising_model.trans_dynamics = IsingMethods.METROPOLIS_DYNAMICS
    
