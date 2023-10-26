@@ -14,3 +14,6 @@ const AUTOMATED_PSD_GRAPHS = joinpath(AUTOMATED_GRAPHS_DIR,"psd")
 #= fourier analysis =#
 const ALL_GLOBAL_MAGN_DIRS = joinpath.(AUTOMATED_SIMULS_DIR, readdir(AUTOMATED_SIMULS_DIR), "magnetization")
 const ALL_AUTOMATED_RFFTS = joinpath.(AUTOMATED_SIMULS_DIR, readdir(AUTOMATED_SIMULS_DIR), "fourier")
+
+#= correlated noise =#
+const CORRELATED_NOISE = joinpath(AUTOMATED_GRAPHS_DIR,"correlated_noise")

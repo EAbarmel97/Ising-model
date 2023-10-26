@@ -3,6 +3,7 @@ export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_prog
 export median_value, get_ARGS
 export create_simulation_sub_dir,create_fourier_dir,create_automated_simulations_dir_if_not_exists,create_simulations_dir_if_not_exists,create_graphs_directories,filter_directory_names
 export count_runs_in_dir, count_number_of_directories_maching_rgx
+export determines_noise_or_movement
 
 using  Statistics
 
@@ -68,16 +69,24 @@ function use_temperature_array() :: Bool
     end
 end
 
-#= Function to neglect  the fist N entries from an array =#
-function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)
+"""
+    neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)::Nothing
+
+Dsicards the fist N entries from an array
+"""
+function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)::Nothing
     try
-        deleteat!(arr, 1:first_N)
+        if first_N > 1            
+            deleteat!(arr, 1:first_N)
+        end
     catch e
         isa(e, BoundsError)
         printstyled(stderr, "ERROR: cannot neglect first $(first_N)",
             bold=true, color=:red) #customized error message 
             println(stderr)
     end
+
+    return nothing
 end
 
     #= Gets an array of strings form a .txt file =#
@@ -95,12 +104,13 @@ function get_str_array(file_path::AbstractString)::Array{String,1}
     end
 end
 
-#= Function that gets an array of floats from a .txt file.
+"""
+    get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int):: Array{Float64,1}
 
-NOTE: 
-If the .txt file is not on the same hierarchy its absulute path must be provided =#
+Gets an array of floats from a .txt file, given its path
+"""
 function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int):: Array{Float64,1}
-    time_series = []
+    arr = Float64[]
     
     stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file
     stringified_array = neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
@@ -108,24 +118,23 @@ function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int):: A
         push!(time_series, parse_int_float64(Float64, stringified_array[i]))
     end
     
-    return time_series
+    return arr 
 end
 
 #= Method to parse an array with elements Float64 or ComplexF64 from a .txt file =#
-function get_array_from_txt(tp :: Union{Type{Float64}, Type{Complex{Float64}}},file_path :: AbstractString, 
-                prune_first_N=0 :: Int) :: Array{Union{ComplexF64,Float64},1}
+function get_array_from_txt(tp::Union{Type{Float64}, Type{Complex{Float64}}},file_path::AbstractString, prune_first_N=0::Int)::Array{Union{ComplexF64,Float64},1}
 
-    time_series = []
+    arr = Union{ComplexF64,Float64}[]
     stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file
-    stringified_array = neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
+    neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
 
     for i in eachindex(stringified_array)
         if tp == Float64
-            push!(time_series, parse_int_float64(Float64, stringified_array[i]))
+            push!(arr, parse_int_float64(Float64, stringified_array[i]))
         end 
         
         if  tp == Complex{Float64}
-            push!(time_series, parse_complex(Complex{Float64}, stringified_array[i]))
+            push!(arr, parse_complex(Complex{Float64}, stringified_array[i]))
         end
     end
 
@@ -311,7 +320,7 @@ end
 function filter_directory_names(dir_names, rgx)
     filtered_array = filter(str -> contains(str, rgx), dir_names)
     if isempty(filtered_array)
-        throw(exceptions.PlottingException("Impossible to graph the given array of temperatures!"))
+        throw(Exceptions.PlottingException("Impossible to graph the given array of temperatures!"))
     end
     
     return filtered_array
@@ -348,4 +357,45 @@ end
 
 #= Correlated Noise auxiliary functions =#
 
+"""
+    determines_noise_or_movement(beta1::Float64)::String
+
+returns a string corresponding to the classification of the simulated correlated noise or movement depending on the 
+values of the beta1 linear fit parameter 
+"""
+function determines_noise_or_movement(beta1::Float64)::String
+    if beta1 == 0.0
+        description = "white noise"
+    end
+    
+    if 0.0 < beta1 < 1.0
+        description = "fractal noise with beta = $beta1"
+    end     
+    
+    if beta1 == 1.0
+        description = "pink noise"
+    end
+
+    if 1.0 < beta1 < 2.0
+        description = "fractal brownian motion with beta = $beta1"
+    end   
+
+    if beta1 == 2.0
+        description = "brownian motion"
+    end
+    
+    return description
+end
+
+"""
+    psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
+
+Outputs the file path where the psd associated of the simulated time series will be saved 
+"""
+function psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
+    
+    full_file_path = joinpath(destination_dir,"psd_beta0_$(round(beta0,digits=2))_beta1_$(round(beta1,digits=2)).pdf")
+
+    return full_file_path
+end
 end #end of module
