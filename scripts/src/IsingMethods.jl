@@ -15,7 +15,7 @@ Random.seed!(1234)
 """
 Unicode representation of the spin grid.
 
-Example: for a 3x3 array the function could print on terminal something like this
+Example: for a 3x3 array the function could print on terminal something like this:
 
 ++-
 -++
@@ -37,7 +37,17 @@ function display(ising_model::isingModel)::Nothing
     return nothing
 end
 
-#= Method with returns a  stringified version of the spin grid=#
+"""
+    display(ising_model::isingModel, generation::Int )::String
+
+Returns a stringified version of the spin grid
+
+Example: for a 3x3 array the function could print on terminal something like this:
+
+'++-\n
+-++\n
+---\n'
+"""
 function display(ising_model::isingModel, generation::Int )::String
     str = "gen $generation:\n"
     for i in 1:ising_model.NGRID
@@ -55,7 +65,7 @@ function display(ising_model::isingModel, generation::Int )::String
 end
 
 """
-    reset_stats(ising_model::isingModel)::nothin
+    reset_stats(ising_model::isingModel)::Nothing
 
 resets the fields global_energy, global_mean, global_variance, global_magnetization to be all 0's
 """
@@ -72,8 +82,11 @@ function reset_stats(ising_model::isingModel)::Nothing
 end
 
 
-#=Returns the energy of a cell
-The grid wraps around at the edges (toroidal symmetry).=#
+"""
+    compute_energy_cell(i::Int, j::Int, ising_model::isingModel)::Float64
+
+Returns the energy of a cell. The grid wraps around at the edges (toroidal symmetry)
+"""
 function compute_energy_cell(i::Int, j::Int, ising_model::isingModel)::Float64 
     energy = 0
     
@@ -105,8 +118,12 @@ function compute_energy_cell(i::Int, j::Int, ising_model::isingModel)::Float64
     return energy #energy per cell 
 end
 
-#=Computes the  mean energy of the whole grid of spins =#
-function update_energy(ising_model::isingModel)
+"""
+    update_energy(ising_model::isingModel)::Nothing
+
+Updates the mean energy of the whole grid of spins
+"""
+function update_energy(ising_model::isingModel)::Nothing
     g_energy = 0
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
@@ -116,10 +133,17 @@ function update_energy(ising_model::isingModel)
     end
     g_energy /= ising_model.NCELLS 
     setfield!(ising_model,:global_energy,g_energy)
+
+    return nothing
 end
 
-#=Computes the mean magnetization of the whole spin grid=#
-function update_magnetization(ising_model::isingModel)
+
+"""
+    update_magnetization(ising_model::isingModel)::Nothing
+    
+Updates the mean magnetization of the whole spin grid
+"""
+function update_magnetization(ising_model::isingModel)::Nothing
     g_magnetization = 0
     for i in 1:ising_model.NGRID
         for j in 1:ising_model.NGRID
@@ -129,6 +153,8 @@ function update_magnetization(ising_model::isingModel)
     end
     g_magnetization /= ising_model.NCELLS
     setfield!(ising_model,:global_magnetization,g_magnetization)
+
+    return nothing
 end
 
 #=Generates random changes in the spin grid but conserving a given magnetization=#

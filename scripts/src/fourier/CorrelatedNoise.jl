@@ -18,11 +18,11 @@ function imexp(x::Array{Float64,1})::Array{ComplexF64,1}
 end
 
 """
-    correlated_noise_generator(N::Int64,beta0::Float64,beta1::Float64)::Array{FloatF64,1} 
+    correlated_noise_generator(N::Int64,beta0::Float64,beta1::Float64)::Array{Float64,1} 
 
 Outputs a time series obtained by inverse-fourier transforming correlated noise given exponenet and intercept from a linear fit 
 """
-function correlated_noise_generator(N::Int64,beta0::Float64,beta1::Float64)::Array{FloatF64,1}
+function correlated_noise_generator(N::Int64,beta0::Float64,beta1::Float64)::Array{Float64,1}
     index_arr = collect(1:N)
     log10_psd = map(index_arr) do u
         return beta0 - beta1*u
@@ -31,8 +31,8 @@ function correlated_noise_generator(N::Int64,beta0::Float64,beta1::Float64)::Arr
     psd = exp10.(log10_psd)
     norm_array = sqrt.(psd) 
     phase_arr = 2*pi*rand(N) 
-    z_array = norm_array .* CorrelatedNoise.imexp(phase_arr) #correlated noise
+    z_array = norm_array .* imexp(phase_arr) #correlated noise
 
-    return ifft(z_array)
+    return irfft(z_array,2*(length(z_array) - 1))
 end
 end #end of module

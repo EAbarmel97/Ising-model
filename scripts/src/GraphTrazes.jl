@@ -35,23 +35,25 @@ function save_traze(dir_to_save::String, file_path::String)
 end
 
 function save_traze(dir_to_save::String, time_series::Array{Float64,1}, beta0::Float64,beta1::Float64)
-    
-    mean = utilities.mean_value(file_path)
-    time_series = utilities.get_array_from_txt(file_path)
-
+    avg = mean(time_series)
     x = collect(0:(length(time_series)-1))
     
-    plt = plot(x, time_series, label= L"M_n") #plot reference 
-    hline!(plt, [mean, mean], label=L"\overline{M}_n",linewidth=3)
+    plt = plot(x,time_series, label= L"X_n") #plot reference 
+    title!("beta0 = $beta0, beta1 = $beta1")
+    hline!(plt, [avg, avg], label=L"\overline{M}_n",linewidth=3)
     #ylims!(-1.0, 1.0)
     xlims!(0, length(time_series))
     xlabel!(L"n")
-    ylabel!(L"M_n")
+    ylabel!(L"X_n")
     savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
 end
 
-# Function 3: Calculate Median Magnetization
-function calculate_median_magnetization(temp_abs_dir::String, num_runs::Int64)
+"""
+    calculate_median_magnetization(temp_abs_dir::String, num_runs::Int64)::Float64
+
+Calculate median magnetization
+"""
+function calculate_median_magnetization(temp_abs_dir::String, num_runs::Int64)::Float64
     magnetization_per_run = Float64[]
     
     for run in 1:num_runs
@@ -100,7 +102,7 @@ end
     write_header(file_name::String,simuls_dir::String)::Nothing
 
 Depending on whether simulations are generated interactively or not, the headers of the file 
-containing the custom csv (as a .txt) are written over such file
+are written over such file containing the custom csv (as a .txt) 
 """
 function write_header(file_name::String,simuls_dir::String)::Nothing
     open(file_name,"w+") do io
