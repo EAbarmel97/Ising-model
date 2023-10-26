@@ -183,14 +183,15 @@ Ex: "graphs/automated/psd_T_0_32_r_1_10.pdf"
 """
 function psd_graph_file_path(temp_dir_name::String,destination_dir::String)::String
     NUM_RUNS = num_runs(temp_dir_name, determine_simulation_dir(destination_dir))
-
+    
     t_dashed_str_temp = replace(temp_dir_name,"simulations_" => "")
     at_temp = joinpath(destination_dir,t_dashed_str_temp)
     full_file_path = joinpath(at_temp,"psd_$(t_dashed_str_temp)_r1_$(NUM_RUNS).pdf")
-
+    
     return full_file_path
 end
 
+#= Auxiliar functions related to linear fit =#
 """
     determines_noise_or_movement(beta1::Float64)::String
 
@@ -233,7 +234,6 @@ function psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float
     return full_file_path
 end
 
-#= Auxiliar functions related to linear fit =#
 
 """
     intercept_and_exponent(x::Array{Float64,1},y::Array{Float64,1})::Array{Float64,1}

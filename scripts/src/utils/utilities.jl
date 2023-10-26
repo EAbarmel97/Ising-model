@@ -1,9 +1,10 @@
 module utilities
 export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS, replace_with_dict
 export median_value, get_ARGS
-export create_simulation_sub_dir,create_fourier_dir,create_automated_simulations_dir_if_not_exists,create_simulations_dir_if_not_exists,create_graphs_directories,filter_directory_names
+export create_simulation_sub_dir,create_fourier_dir,create_simulations_dir_if_not_exist,create_graphs_directories,filter_directory_names
+
 export count_runs_in_dir, count_number_of_directories_maching_rgx
-export determines_noise_or_movement
+export determines_noise_or_movement,psd_graph_file_path
 
 using  Statistics
 
@@ -25,8 +26,7 @@ function swap!(val1::Int, val2::Int, obj::Union{Array{Float64,1},Array{Int,1}})
 end
 
 #= Function to parse an int of float64 at once=#
-function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
-    parsing_string :: String) :: Union{Float64,Int}
+function parse_int_float64(tp::Union{Type{Float64},Type{Int}},parsing_string::String)::Union{Float64,Int}
     try
         parsed_result = Base.parse(tp, parsing_string)
         return parsed_result
@@ -39,7 +39,7 @@ function parse_int_float64(tp :: Union{Type{Float64},Type{Int}},
 end
 
 #= Function to parse complex input ina string =#
-function parse_complex(tp :: Type{T}, parsing_string :: String) where T <: Complex
+function parse_complex(tp::Type{T}, parsing_string::String) where T <: Complex
     try
         parsed_result = Base.parse(tp, parsing_string)
         return parsed_result
@@ -48,24 +48,6 @@ function parse_complex(tp :: Type{T}, parsing_string :: String) where T <: Compl
         printstyled(stderr, "ERROR: imposible to parse a type $tp from '$parsing_string'",
             bold=true, color=:red) #customized error message 
         println(stderr)
-    end
-end
-
-#= Function to match user input =#
-function use_temperature_array() :: Bool
-    print("use temperature array?: [y/n]\t")
-    usr_input = lowercase(readline())
-    
-    while true
-        if usr_input == "y"
-            return true
-        end
-        
-        if usr_input == "n"
-            return false
-        end
-        
-        usr_input = lowercase(readline())
     end
 end
 
@@ -212,6 +194,25 @@ function append_2_element_array_or_throw(arr1::AbstractArray,arr2)
     append!(arr2,arr1)    
 end
 
+#= Auxiliary functions for user input processing =#
+
+function use_temperature_array() :: Bool
+    print("use temperature array?: [y/n]\t")
+    usr_input = lowercase(readline())
+    
+    while true
+        if usr_input == "y"
+            return true
+        end
+        
+        if usr_input == "n"
+            return false
+        end
+        
+        usr_input = lowercase(readline())
+    end
+end
+
 function get_ARGS()::Array{Union{Int64,Float64},1}
     ARGS = Union{Int64,Float64}[]
     
@@ -333,6 +334,12 @@ function create_magnetization_dir(simulation_dir::String)::String
     return global_magnetization_aux_dir
 end
 
+function create_correlated_noise_dir()
+    if !isdir(CORRELATED_NOISE_DIR)
+        mkpath(CORRELATED_NOISE_DIR)
+    end
+end
+
 function create_magnetization_time_series_file(file_name, dir_to_save)
     #= Creation of generic .txt files containing global magnetization time series =#
     magnetization_file_path = joinpath(dir_to_save, file_name)
@@ -353,6 +360,21 @@ end
 
 function count_number_of_directories_maching_rgx(dir_names::Array{String},rgx::Regex)
     return length(filter_directory_names(dir_names,rgx))
+end
+
+"""
+    psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
+
+Outputs the file path where the psd associated of the simulated time series will be saved 
+"""
+function psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
+    full_file_path = joinpath(destination_dir,"psd_beta0_$(round(beta0,digits=2))_beta1_$(round(beta1,digits=2)).pdf")
+
+    return full_file_path
+end
+
+function correlated_noise_graph_file_path(dir::String,beta0::Float64,beta1::Float64)::String
+    return utilities.psd_graph_file_path(dir,beta0,beta1)  
 end
 
 #= Correlated Noise auxiliary functions =#
@@ -385,17 +407,5 @@ function determines_noise_or_movement(beta1::Float64)::String
     end
     
     return description
-end
-
-"""
-    psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
-
-Outputs the file path where the psd associated of the simulated time series will be saved 
-"""
-function psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
-    
-    full_file_path = joinpath(destination_dir,"psd_beta0_$(round(beta0,digits=2))_beta1_$(round(beta1,digits=2)).pdf")
-
-    return full_file_path
 end
 end #end of module
