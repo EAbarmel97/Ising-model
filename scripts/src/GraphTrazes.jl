@@ -137,7 +137,7 @@ function write_over_file_from_dict!(filtered_array::AbstractArray,file_to_write:
 end
 
 """
-Function 7: Main Function
+Main Function
 """
 function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::AbstractString, file_to_write::AbstractString, rgx::Regex)
     utilities.create_graphs_directories(simuls_dir)

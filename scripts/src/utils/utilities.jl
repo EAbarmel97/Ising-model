@@ -4,7 +4,7 @@ export median_value, get_ARGS
 export create_simulation_sub_dir,create_fourier_dir,create_simulations_dir_if_not_exist,create_graphs_directories,filter_directory_names
 
 export count_runs_in_dir, count_number_of_directories_maching_rgx
-export determines_noise_or_movement,psd_graph_file_path
+export determines_noise_or_movement,graph_file_path
 
 using  Statistics
 
@@ -367,8 +367,8 @@ end
 
 Outputs the file path where the psd associated of the simulated time series will be saved 
 """
-function psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
-    full_file_path = joinpath(destination_dir,"psd_beta0_$(round(beta0,digits=2))_beta1_$(round(beta1,digits=2)).pdf")
+function graph_file_path(destination_dir::String,A::Float64,beta::Float64)::String
+    full_file_path = joinpath(destination_dir,"ts_log_A_$(round(log10(A),digits=2))_beta1_$(round(beta,digits=2)).pdf")
 
     return full_file_path
 end
