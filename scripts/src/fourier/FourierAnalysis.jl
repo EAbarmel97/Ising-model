@@ -295,9 +295,9 @@ function plot_log_PSD_exponent(log_PSD_exponent_file_path::String)
 
         f = sampling_freq_arr()
         #plot styling
-        plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
+        plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
         
-        plot!(f, average_psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,lc=:red)
+        plot!(f, average_psd, label=L"PSD \ \left( f \right)", xscale=:log10, yscale=:log10,lc=:red)
         #linear fit
         plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
         
@@ -374,9 +374,9 @@ function plot_psd(x::Array{Float64,1}, destination_dir::String,A::Float64,beta::
         plt = plot(f,psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
     
         #expected linear fit
-        plot!((u) -> exp10(log10(A)-beta*log10(u)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+        plot!((u) -> exp10(log10(A)-beta*log10(u)),minimum(f),maximum(f), xscale=:log10,yscale=:log10,lc=:black)
         #linear fit
-        plot!((u) -> exp10(params[1] + params[2]*log10(u)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:red)
+        plot!((u) -> exp10(params[1] + params[2]*log10(u)),minimum(f),maximum(f), xscale=:log10,yscale=:log10,lc=:red)
          
         title!("PSD for ts with A = $A and beta = $beta")
         xlabel!(L"f")
