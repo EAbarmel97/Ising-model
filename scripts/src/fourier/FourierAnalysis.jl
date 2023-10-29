@@ -366,23 +366,18 @@ function plot_psd(x::Array{Float64,1}, destination_dir::String,A::Float64,beta::
     psd = compute_psd(rfft_arr)
     deleteat!(psd,1)
 
-   #=  @show any(iszero,psd)
-    @show length(filter(iszero,psd))
-    @show findall(x-> x==0,psd) =#
-
     params = intercept_and_exponent_from_log_psd(f,psd)
     
     full_file_path = psd_graph_file_path(destination_dir,A,beta)
     if !isfile(full_file_path)
         #plot styling
         plt = plot(f,psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
-        
+    
         #expected linear fit
-        #plot!((u) -> exp10(beta0-beta1*log10(u)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
-        plot!(f,(u) -> exp10(log10(A)-beta*log10(u)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
+        plot!((u) -> exp10(log10(A)-beta*log10(u)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
         #linear fit
         plot!((u) -> exp10(params[1] + params[2]*log10(u)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:red)
-        
+         
         title!("PSD for ts with A = $A and beta = $beta")
         xlabel!(L"f")
         ylabel!("power density spectra")

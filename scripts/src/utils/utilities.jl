@@ -58,7 +58,7 @@ Dsicards the fist N entries from an array
 """
 function neglect_N_first_from_array!(arr::AbstractArray, first_N::Int)::Nothing
     try
-        if first_N > 1            
+        if first_N >= 1            
             deleteat!(arr, 1:first_N)
         end
     catch e
@@ -95,9 +95,9 @@ function get_array_from_txt(file_path::AbstractString, prune_first_N=0::Int):: A
     arr = Float64[]
     
     stringified_array = get_str_array(file_path) #attemps to get an array with the lines of the .txt file
-    stringified_array = neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
+    neglect_N_first_from_array!(stringified_array,prune_first_N) #attemps prunning first N elements from array 
     for i in eachindex(stringified_array)
-        push!(time_series, parse_int_float64(Float64, stringified_array[i]))
+        push!(arr, parse_int_float64(Float64, stringified_array[i]))
     end
     
     return arr 
@@ -120,7 +120,7 @@ function get_array_from_txt(tp::Union{Type{Float64}, Type{Complex{Float64}}},fil
         end
     end
 
-    return time_series
+    return arr
     
 end
 
@@ -185,6 +185,10 @@ const TEMPERATURE_INTERVALS = get_default_temperature_array()
 #= method to replace a function with a replacement dictionary =#
 function replace_with_dict(str :: String, replace_dict :: Dict{T, String} where T <: Any) :: String 
     return replace(str,replace_dict...)
+end
+
+function separate_by_dashes(str::String)::String
+    return replace(str, "." => "_")
 end
 
 function append_2_element_array_or_throw(arr1::AbstractArray,arr2)
@@ -286,14 +290,14 @@ function create_simulation_sub_dir(temp::Float64,is_automated::Bool)::String
 end
 
 function create_graphs_dir_if_not_exits()
-    if !isdir(GRAPHS_DIR)
-        mkpath(GRAPHS_DIR)
+    if !isdir(GRAPHS_DIR_SIMULS)
+        mkpath(GRAPHS_DIR_SIMULS)
     end
 end
 
 function create_automated_graphs_dir_if_not_exists()
-    if !isdir(AUTOMATED_GRAPHS_DIR)
-        mkpath(AUTOMATED_GRAPHS_DIR)
+    if !isdir(AUTOMATED_GRAPHS_DIR_SIMULS)
+        mkpath(AUTOMATED_GRAPHS_DIR_SIMULS)
     end
 end
 
@@ -310,10 +314,10 @@ end
 function create_temperature_directory(at_temp::String, simuls_dir::String)
     if contains(simuls_dir, "automated")
         #= at_temp_dir = joinpath(AUTOMATED_GRAPHS_DIR, at_temp) =#
-        mkpath(joinpath(AUTOMATED_GRAPHS_DIR, at_temp))
+        mkpath(joinpath(AUTOMATED_GRAPHS_DIR_SIMULS, at_temp))
     else
         #= at_temp_dir = joinpath(GRAPHS_DIR, at_temp) =#
-        mkpath(joinpath(GRAPHS_DIR, at_temp))
+        mkpath(joinpath(GRAPHS_DIR_SIMULS, at_temp))
     end
 end
 
@@ -368,13 +372,21 @@ end
 Outputs the file path where the psd associated of the simulated time series will be saved 
 """
 function graph_file_path(destination_dir::String,A::Float64,beta::Float64)::String
-    full_file_path = joinpath(destination_dir,"ts_log_A_$(round(log10(A),digits=2))_beta1_$(round(beta,digits=2)).pdf")
+    full_file_path = joinpath(destination_dir,"ts_log_A_$(separate_by_dashes(string(round(log10(A),digits=2))))_beta_$(separate_by_dashes(string(round(beta,digits=2)))).pdf")
 
     return full_file_path
 end
 
-function correlated_noise_graph_file_path(dir::String,beta0::Float64,beta1::Float64)::String
-    return utilities.psd_graph_file_path(dir,beta0,beta1)  
+"""
+    psd_graph_file_path(destination_dir::String,beta0::Float64,beta1::Float64)::String
+
+Outputs the file path where the psd associated of the simulated time series will be saved 
+"""
+function psd_graph_file_path(destination_dir::String,A::Float64,beta::Float64)::String
+
+    full_file_path = joinpath(destination_dir,"psd_log_A_$(separate_by_dashes(string(round(log10(A),digits=2))))_beta_$(separate_by_dashes(string(round(beta,digits=2)))).pdf")
+
+    return full_file_path
 end
 
 #= Correlated Noise auxiliary functions =#

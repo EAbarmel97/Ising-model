@@ -1,5 +1,5 @@
 module GraphTrazes
-export save_traze, PlottingException, graph_and_write_over_file!, plot_mean_magn
+export save_traze, PlottingException, graph_and_write_over_file!, plot_median_magn
 
 using Plots
 using Statistics
@@ -71,9 +71,9 @@ function save_graphs(temp_abs_dir::String, aux_dir_name::String, run::Int64, at_
     aux_graph_file_name *= "_r$run.pdf"
 
     if contains(temp_abs_dir, "automated")
-        aux_graph_full_name = joinpath(AUTOMATED_GRAPHS_DIR, at_temp, aux_graph_file_name)
+        aux_graph_full_name = joinpath(AUTOMATED_GRAPHS_DIR_SIMULS, at_temp, aux_graph_file_name)
     else
-        aux_graph_full_name = joinpath(GRAPHS_DIR, at_temp, aux_graph_file_name)
+        aux_graph_full_name = joinpath(GRAPHS_DIR_SIMULS, at_temp, aux_graph_file_name)
     end
 
     if isfile(joinpath(temp_abs_dir, "global_magnetization_r$run.txt"))
@@ -137,7 +137,9 @@ function write_over_file_from_dict!(filtered_array::AbstractArray,file_to_write:
 end
 
 """
-Main Function
+    graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::AbstractString, file_to_write::AbstractString, rgx::Regex)
+
+Writes the values of the median magnetization per run to a .txt file and then plots the time series traze by run
 """
 function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::AbstractString, file_to_write::AbstractString, rgx::Regex)
     utilities.create_graphs_directories(simuls_dir)
@@ -173,8 +175,11 @@ function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::Abstra
     end    
 end
 
-#= method to plot custom csv file containing mean magn at its corresponding temp =#
-function plot_mean_magn(file_dir::String, dir_to_save::String)
+"""
+
+Plot custom csv file containing mean magn at its corresponding temp 
+"""
+function plot_median_magn(file_dir::String, dir_to_save::String)
     temps = Float64[]
     median_magns = Float64[]
 
@@ -182,7 +187,6 @@ function plot_mean_magn(file_dir::String, dir_to_save::String)
     open(file_dir, "r+") do io
         arr_str = readlines(io) 
         neglect_N_first_from_array!(arr_str,1) #discarting the headers
-    
         for i in eachindex(arr_str)
             substr_temp_and_mean_magn_arr = split(arr_str[i],",")
             stringified_temp = string(substr_temp_and_mean_magn_arr[1])
