@@ -1,5 +1,5 @@
 module FourierAnalysis
-export  compute_rfft, compute_psd, write_rfft, plot_psds
+export  compute_rfft, compute_psd, write_rfft, plot_psd, plotpsd
 
 using FFTW
 using Plots
@@ -100,6 +100,35 @@ function mean_psd(psd_array::Array{Array{Float64,1},1})::Array{Float64,1}
     return sum/length(psd_array)
 end
 
+"""
+    psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{Float64,1},1}
+
+returns an array with the psd at each run.
+"""
+function psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{Float64,1},1}
+    rffts_at_temp = joinpath(simuls_dir,temp_dir_name,"fourier")
+    psd_array = Array{Float64,1}[]
+    for rfft_file_name in file_names_in_fourier_dir(temp_dir_name,simuls_dir)
+        rfft_path = joinpath(rffts_at_temp,rfft_file_name)#abs path to the strigified file  for the rfft 
+
+        #fetching and appending psd to the array containg the power spectra densities
+        rfft = utilities.get_array_from_txt(Complex{Float64},rfft_path)
+        #rfft of the M_n with initial temperature x_y_z
+        rfft = rfft[2:end-1]#discarting the DC associated entry and the last element array 
+        
+        rfft = convert.(ComplexF64,rfft) #casting array to ComplexF64
+        
+        psd = compute_psd(rfft) #array with the psd associated with RFFT[M_n]
+        push!(psd_array,psd)
+    end
+    
+    return psd_array
+end
+
+function mean_psd()
+    
+end
+
 #= Custom IO auxiliar functions =#
 
 """
@@ -147,31 +176,6 @@ computes the number of files contained in the ../fourier/ dir. That is the same 
 """
 function num_runs(temp_dir_name::String,simuls_dir)::Int64
     return length(file_names_in_fourier_dir(temp_dir_name,simuls_dir))
-end
-
-"""
-    psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{Float64,1},1}
-
-returns an array with the psd at each run.
-"""
-function psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{Float64,1},1}
-    rffts_at_temp = joinpath(simuls_dir,temp_dir_name,"fourier")
-    psd_array = Array{Float64,1}[]
-    for rfft_file_name in file_names_in_fourier_dir(temp_dir_name,simuls_dir)
-        rfft_path = joinpath(rffts_at_temp,rfft_file_name)#abs path to the strigified file  for the rfft 
-
-        #fetching and appending psd to the array containg the power spectra densities
-        rfft = utilities.get_array_from_txt(Complex{Float64},rfft_path)
-        #rfft of the M_n with initial temperature x_y_z
-        rfft = rfft[2:end-1]#discarting the DC associated entry and the last element array 
-        
-        rfft = convert.(ComplexF64,rfft) #casting array to ComplexF64
-        
-        psd = compute_psd(rfft) #array with the psd associated with RFFT[M_n]
-        push!(psd_array,psd)
-    end
-    
-    return psd_array
 end
 
 """
@@ -286,6 +290,15 @@ function write_exponent(exponent::Float64,num_runs::Int64)
     end       
 end
 
+function write_exponent()
+    psd_array = psd_arr_by_run(temp_name_dir,simuls_dir)
+    average_psd = mean_psd(psd_array) #mean psd
+end
+
+function write_exponent_file()
+
+end
+
 """
 
 """
@@ -362,7 +375,7 @@ Plots the psd associated with a complex array of numbers in log-log scale, highl
 function plot_psd(x::Array{Float64,1}, destination_dir::String,A::Float64,beta::Float64)
     rfft_arr = rfft(x)
     f = sampling_freq_arr(length(x))
-
+    
     psd = compute_psd(rfft_arr)
     deleteat!(psd,1)
 
@@ -372,12 +385,47 @@ function plot_psd(x::Array{Float64,1}, destination_dir::String,A::Float64,beta::
     if !isfile(full_file_path)
         #plot styling
         plt = plot(f,psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
-    
+        @show round(log10(A),digits=2) == round(params[1],digits=2)
+        @show round(beta,digits=2) == round(params[2],digits=2)
+
         #expected linear fit
         plot!((u) -> exp10(log10(A)-beta*log10(u)),minimum(f),maximum(f), xscale=:log10,yscale=:log10,lc=:black)
         #linear fit
         plot!((u) -> exp10(params[1] + params[2]*log10(u)),minimum(f),maximum(f), xscale=:log10,yscale=:log10,lc=:red)
-         
+        
+        title!("PSD for ts with A = $A and beta = $beta")
+        xlabel!(L"f")
+        ylabel!("power density spectra")
+        
+        #file saving
+        savefig(plt, full_file_path)
+    end    
+end
+
+"""
+    plot_psd(destination_dir::AbstractString)
+
+Plots the psd associated with a complex array of numbers in log-log scale, highlighting the linear fit in black
+"""
+function plotpsd(x::Array{Float64,1}, destination_dir::String,A::Float64,beta::Float64)
+    rfft_arr = rfft(x)
+    f = sampling_freq_arr(length(x))
+    
+    psd = compute_psd(rfft_arr)
+    deleteat!(psd,1)
+    
+    expected_psd = map((u) -> exp10(log10(A)-beta*log10(u)),f)
+    params = intercept_and_exponent_from_log_psd(f,psd)
+    
+    full_file_path = psd_graph_file_path(destination_dir,A,beta)
+    if !isfile(full_file_path)
+        #plot styling
+        plt = plot(f,psd, label=L"PSD \ \left( f \right)", legend=false, xscale=:log10, yscale=:log10,alpha=0.2)
+        
+        plot!(f,expected_psd,xscale=:log10,yscale=:log10,lc=:black)#plot reference 
+        #linear fit
+        plot!((u) -> exp10(params[1] + params[2]*log10(u)),minimum(f),maximum(f), xscale=:log10,yscale=:log10,lc=:red)
+        
         title!("PSD for ts with A = $A and beta = $beta")
         xlabel!(L"f")
         ylabel!("power density spectra")
