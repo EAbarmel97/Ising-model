@@ -14,7 +14,7 @@ using .FourierAnalysis: intercept_and_exponent_from_log_psd
 
 export create_ts_matrix, centralize_matrix, plot_eigen_spectrum
 
-function filter_eigen_vals_array(atol::Float64,M::Matrix{Float64})
+function filter_singular_vals_array(atol::Float64,M::Matrix{Float64})
     prop_vals = svd(M).S  
     return filter(u -> u > atol, prop_vals)
 end
@@ -48,7 +48,7 @@ Persist a pdf file with the plot_eigen_spectrum of the matrix M
 """
 function plot_eigen_spectrum(dir_to_save::String, M::Matrix{Float64})
     #build x, y axis 
-    filtered_eig_vals = filter_eigen_vals_array(0.001,M)
+    filtered_eig_vals = abs2.(filter_singular_vals_array(0.001,M))[2:end]
     x = collect(Float64,1:length(filtered_eig_vals))
     
     #compute linear fit 
