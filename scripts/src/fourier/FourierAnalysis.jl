@@ -1,5 +1,5 @@
 module FourierAnalysis
-export  compute_rfft, compute_psd, write_rfft, plot_psd, plotpsd
+export  compute_rfft, compute_psd, write_rfft, plot_psd, plotpsd, intercept_and_exponent_from_log_psd
 
 using FFTW
 using Plots
@@ -125,10 +125,6 @@ function psd_arr_by_run(temp_dir_name::String,simuls_dir::String)::Array{Array{F
     return psd_array
 end
 
-function mean_psd()
-    
-end
-
 #= Custom IO auxiliar functions =#
 
 """
@@ -248,6 +244,7 @@ end
 
 Returns an array with the parameter estimators for a linear fit
 """
+
 function intercept_and_exponent(x::Array{Float64,1},y::Array{Float64,1})::Array{Float64,1}
     X = hcat(ones(length(x)),x)
 
@@ -293,35 +290,6 @@ end
 function write_exponent()
     psd_array = psd_arr_by_run(temp_name_dir,simuls_dir)
     average_psd = mean_psd(psd_array) #mean psd
-end
-
-function write_exponent_file()
-
-end
-
-"""
-
-"""
-function plot_log_PSD_exponent(log_PSD_exponent_file_path::String)
-
-    if !isfile(log_PSD_exponent_file_path)
-
-        f = sampling_freq_arr()
-        #plot styling
-        plt = plot(f, psd_array, label=L"PSD \ \left( f \right)", xscale=:log10, yscale=:log10,alpha=0.2) #plot reference 
-        
-        plot!(f, average_psd, label=L"PSD \ \left( f \right)", xscale=:log10, yscale=:log10,lc=:red)
-        #linear fit
-        plot!((x) -> exp10(params[1] + params[2]*log10(x)),minimum(f),maximum(f),legend=false, xscale=:log10,yscale=:log10,lc=:black)
-        
-    
-        title!("PSD for ts with init temp $(str_temp)")
-        xlabel!(L"f")
-        ylabel!("power density spectra")
-        
-        #file saving
-        savefig(plt, full_file_path)
-    end
 end
 
 """
