@@ -24,12 +24,12 @@ end
 
 Returns Float64 a matrix by stacking a given number of observations and a linear correlation exponent
 """
-function create_ts_matrix(beta::Float64, number_of_observations=10::Int)::Matrix{Float64}
+function create_ts_matrix(beta::Float64, number_of_realizations=10::Int,number_of_observations=1000::Int)::Matrix{Float64}
     corr_noises_arr  = Float64[]
     corr_noises_arr = Array{Float64,1}[]
 
-    for i in 1:number_of_observations
-        corr_noise = CorrelatedNoise.correlated_noise_generator(1000,1.0,beta) #times series 
+    for i in 1:number_of_realizations
+        corr_noise = CorrelatedNoise.correlated_noise_generator(number_of_observations,1.0,beta) #times series 
         push!(corr_noises_arr,corr_noise)
     end
     
@@ -62,7 +62,7 @@ function plot_eigen_spectrum(dir_to_save::String, M::Matrix{Float64})
         #linear fit
         plot!(u -> exp10(params[1] + params[2]*log10(u)),minimum(x),maximum(x), xscale=:log10,yscale=:log10,lc=:red)
         
-        title!("Eigen spectrum, beta_fit = $(round(-params[2],digits=3))")
+        title!("Eigen spectrum, beta_fit = $(round(-params[2],digits=7))")
         xlabel!(L"n")
         ylabel!("Eigen spectrum")
         
