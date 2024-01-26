@@ -125,6 +125,7 @@ function write_over_file_from_dict!(filtered_array::AbstractArray,file_to_write:
         temp = temperatures[i]
 
         if i != length(filtered_array)
+            
         else
             str_to_append = string("$temp,", temperatures_median_magn[temp]) 
         end
@@ -176,7 +177,8 @@ function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::Abstra
 end
 
 """
-
+    plot_median_magn(file_dir::String, dir_to_save::String)
+    
 Plot custom csv file containing mean magn at its corresponding temp 
 """
 function plot_median_magn(file_dir::String, dir_to_save::String)

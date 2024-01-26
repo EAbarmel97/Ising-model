@@ -14,6 +14,7 @@ function imexp(x::Array{Float64,1})::Array{ComplexF64,1}
         unitary_norm_complex = cos(x[i]) + sin(x[i])*im
         push!(unitary_norm_complex_arr,unitary_norm_complex)
     end
+
     return unitary_norm_complex_arr
 end
 
@@ -22,7 +23,7 @@ end
 
 Outputs a time series obtained by inverse-fourier transforming correlated noise given exponenet and intercept from a linear fit 
 """
-function correlated_noise_generator(N::Int64,A::Float64,beta::Float64)::Array{Float64,1}
+function correlated_noise_generator(N::Int64, A::Float64, beta::Float64)::Array{Float64,1}
     index_arr = collect(1:N)
     log10_psd = map(index_arr) do u
         return log10(A) - beta*log10(u)
@@ -36,7 +37,7 @@ function correlated_noise_generator(N::Int64,A::Float64,beta::Float64)::Array{Fl
     return real(ifft(z_array))
 end
 
-function corr_noise_gen(N::Int64,A::Float64,beta::Float64)::Array{Float64,1}
+function corr_noise_gen(N::Int64, A::Float64, beta::Float64)::Array{Float64,1}
     psd = Float64[]
     frequencies = Float64[]
     freq = 0

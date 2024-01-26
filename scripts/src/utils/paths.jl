@@ -14,7 +14,6 @@ const AUTOMATED_GRAPHS_DIR = joinpath(GRAPHS_DIR, "automated")
 const AUTOMATED_GRAPHS_DIR_SIMULS = joinpath(AUTOMATED_GRAPHS_DIR,"simuls")
 const AUTOMATED_PSD_GRAPHS = joinpath(AUTOMATED_GRAPHS_DIR,"psd")
 const AUTOMATED_PSD_GRAPHS_SIMULS = joinpath(AUTOMATED_PSD_GRAPHS,"simuls")
-const AUTOMATED_EIGEN_SEPCTRUM_GRAPHS_DIR = joinpath(AUTOMATED_GRAPHS_DIR, "svd")
 
 #= fourier analysis =#
 const ALL_GLOBAL_MAGN_DIRS = joinpath.(AUTOMATED_SIMULS_DIR, readdir(AUTOMATED_SIMULS_DIR), "magnetization")
@@ -22,3 +21,6 @@ const ALL_AUTOMATED_RFFTS = joinpath.(AUTOMATED_SIMULS_DIR, readdir(AUTOMATED_SI
 
 #= correlated noise =#
 const CORRELATED_NOISE_DIR = joinpath(AUTOMATED_GRAPHS_DIR,"correlated_noise")
+
+#= eigen spectrum =#
+const AUTOMATED_EIGEN_SEPCTRUM_GRAPHS_DIR = joinpath(AUTOMATED_GRAPHS_DIR, "svd")

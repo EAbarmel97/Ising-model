@@ -1,7 +1,7 @@
 module utilities
 export swap!, parse_int_float64, get_array_from_txt, mean_value, push_arith_progression!,use_temperature_array, TEMPERATURE_INTERVALS, replace_with_dict
 export median_value, get_ARGS
-export create_simulation_sub_dir,create_fourier_dir,create_simulations_dir_if_not_exist,create_graphs_directories,filter_directory_names
+export create_simulation_sub_dir,create_fourier_dir,create_simulations_dir_if_not_exist,create_dir_if_not_exists,create_graphs_directories,filter_directory_names
 
 export count_runs_in_dir, count_number_of_directories_maching_rgx
 export determines_noise_or_movement,graph_file_path
@@ -356,6 +356,14 @@ function create_fourier_dir_if_not_exists(simulations_dir::String)::String
     FOURIER_AUTOMATED_DIR = joinpath(simulations_dir, "fourier")
     mkpath(FOURIER_AUTOMATED_DIR)  
 end
+
+function create_dir_not_exists(dit_to_create::String)::Nothing
+    if !isdir(dir_to_create)
+        mkpath(dir_to_create)
+    end
+    
+    return nothing
+end    
 
 function count_runs_in_dir(simuls_dir::String, aux_dir_name::String)::Int64
     temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization") #abs path to the simulations at a given temp 
