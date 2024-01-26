@@ -14,7 +14,7 @@ include("../utils/paths.jl")
 include("../fourier/FourierAnalysis.jl")
 using .FourierAnalysis: intercept_and_exponent_from_log_psd
 
-export create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta_fit
+export create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta_fit, plot_beta_beta_fit 
 
 const BETA_BETA_FIT_FILE_PATH  = "beta_beta_fit.txt"
 
@@ -23,7 +23,7 @@ const BETA_BETA_FIT_FILE_PATH  = "beta_beta_fit.txt"
 
 Returns Float64 a matrix by stacking a given number of observations and a linear correlation exponent
 """
-function create_ts_matrix(beta::Float64, number_of_realizations=10::Int,number_of_observations=1000::Int)::Matrix{Float64}
+function create_ts_matrix(beta::Float64; number_of_realizations=100::Int,number_of_observations=1000::Int)::Matrix{Float64}
     corr_noises_arr  = Float64[]
     corr_noises_arr = Array{Float64,1}[]
 
@@ -40,13 +40,13 @@ end
 
 returns an array of dim 2 whose elements are arrays of float64. Respectively they are the x-axis and y-exis to by ploted latter on
 """
-function create_ploting_axes(M::Matrix{Float64})::Array{Array{Float64,1},1}
-    return collect(Float64,1:length(eig_vals)), compute_eigvals(0.001,M)
+function _create_ploting_axes(M::Matrix{Float64})::Array{Array{Float64,1},1}
+    axes = (collect(Float64,1:length(compute_eigvals(0.001,M))), compute_eigvals(0.001,M;drop_first=true))
+    return collect(axes)
 end
 
-
-function create_eigenspectrum_plot_file_path(dir_to_save,beta::Float64)
-    file_name = replace("eigenspectrum_beta_$(round(beta,digits=3)).pdf")
+function _create_eigenspectrum_plot_file_path(dir_to_save,beta::Float64)
+    file_name = replace("eigenspectrum_beta_$(round(beta,digits=3))", "." => "_") * ".pdf"
     return joinpath(dir_to_save,file_name)
 end
 
@@ -55,31 +55,32 @@ end
 
 Create a .txt file where the beta and beta fit will be written; When created it also writes the headers of the file
 """
-function create_beta_beta_fit_file()
+function _create_beta_beta_fit_file()
     if !isfile(BETA_BETA_FIT_FILE_PATH)
         touch(BETA_BETA_FIT_FILE_PATH) 
         #writes headers to file one it is created
         open(BETA_BETA_FIT_FILE_PATH,"w+") do io
-            write(io,"beta,beta_fit")
+            write(io,"beta,beta_fit\n")
         end    
     end
 end
 
 
-function write_beta_to_file(full_file_path::String,beta::Float64,beta_fit::Float64,is_eof=true::Bool)
+function _write_beta_to_file(full_file_path::String,beta::Float64,beta_fit::Float64;is_eof=true::Bool)
     value_to_write = "$(beta),$(beta_fit)"
     if !isfile(full_file_path)
         if is_eof
             open(full_file_path,"w+") do io
-                write(io, value_to_write * "\n")
+                write(io, value_to_write)
             end 
         else
             open(full_file_path,"w+") do io
-                write(io,value_to_write)
+                write(io,value_to_write * "\n")
             end    
         end      
     end    
 end
+
 
 """
     write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas::Int; 
@@ -89,16 +90,16 @@ Writes over a .txt file the values of the several beta vs beta fit values. Th gr
 save_individual_plot. It's default value is false.
 """
 function write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas::Int; 
-                             save_individual_plot=false::Bool)
-    create_beta_beta_fit_file()
+                              number_of_realizations=10::Int,number_of_observations=1000::Int,save_individual_plot=false::Bool,)
+    _create_beta_beta_fit_file()
     #= TO OPTIMIZE USING multi-threads =#
-    for beta in LinRange(from_beta, to_beta, num_of_betas)
-        is_eof = beta == to_file #line will no be written to file if eof
-
-        ts_matrix = create_ts_matrix(beta,1000,10000)
-        M = SVD.centralize_matrix(ts_matrix)
-        eigvals = compute_eigvals(0.001,M)
+    Threads.@threads for beta in LinRange(from_beta, to_beta, num_of_betas)  
+        is_eof = beta == to_beta #line will no be written to file if eof
         
+        eigvals = compute_eigenvals_from_beta_generated_noise(beta;
+                            number_of_realizations=number_of_realizations,
+                            number_of_observations=number_of_observations)
+       
         if save_individual_plot
             file_path = create_eigenspectrum_plot_file_path(dir_to_save,beta)
             plot_eigen_spectrum(file_path,M,beta)
@@ -106,7 +107,7 @@ function write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas:
 
         params = compute_linear_fit_params(eigvals)
 
-        write_beta_to_file(beta_beta_fit_file_path,beta,params[2],is_eof) 
+        _write_beta_to_file(BETA_BETA_FIT_FILE_PATH,beta,params[2];is_eof) 
     end
 end
 
@@ -116,8 +117,9 @@ end
 Reads teh contents of the .txt file with the values of the beta, beta_fit and returns them in a nested array
 """
 function read_beta_beta_fit(file_path::String)::Array{Array{Float64,1},1}
-    beta_array = Float64[]
+    beta_array = Float64[] 
     beta_fit_array = Float64[]
+    betas = (beta_array, beta_fit_array)
 
     lines = readlines(file_path)
     for line in lines[2:end]
@@ -126,8 +128,8 @@ function read_beta_beta_fit(file_path::String)::Array{Array{Float64,1},1}
         push!(beta_array,beta_beta_fit[1])
         push!(beta_fit_array,beta_beta_fit[2])
     end
-    
-    return beta_array, beta_fit_array
+
+    return collect(betas)
 end
 
 """
@@ -135,8 +137,8 @@ end
 
 Returns the parameters of the linear fit of an eigenspectrum 
 """
-function compute_linear_fit_params(eigvals::Array{Float64,1})::Arraty{Float64,1}
-    return FourierAnalysis.intercept_and_exponent_from_log_psd(collect(Float64,length(eigvals)),eigvals)
+function compute_linear_fit_params(eigvals::Array{Float64,1})::Array{Float64,1}
+    return FourierAnalysis.intercept_and_exponent_from_log_psd(collect(Float64,1:length(eigvals)),eigvals)
 end
 
 function centralize_matrix(M::Matrix{Float64})::Matrix{Float64}
@@ -154,12 +156,20 @@ function filter_singular_vals_array(atol::Float64,M::Matrix{Float64})
     return filter(u -> u > atol, prop_vals)
 end
 
-function compute_eigvals(atol::Float64,M::Matrix{Float64},drop_first=true::Bool)::Array{Float64,1}
+function compute_eigvals(atol::Float64,M::Matrix{Float64}; drop_first=true::Bool)::Array{Float64,1}
     if drop_first 
         return abs2.(filter_singular_vals_array(atol,M))[2:end]
     end
     
     return abs2.(filter_singular_vals_array(atol,M))
+end
+
+function compute_eigenvals_from_beta_generated_noise(beta::Float64; number_of_realizations=10::Int,number_of_observations=1000::Int)::Array{Float64,1}
+    ts_matrix = create_ts_matrix(beta;number_of_realizations=number_of_realizations,number_of_observations=number_of_realizations)
+    M = SVD.centralize_matrix(ts_matrix)
+    eigvals = compute_eigvals(0.001,M)
+
+    return eigvals
 end
 
 """
@@ -168,13 +178,13 @@ end
 Persist a pdf file with the plot_eigen_spectrum of the matrix M     
 """
 function plot_eigen_spectrum(dir_to_save::String, M::Matrix{Float64},beta::Float64)
-    #build x, y axis 
-    ploting_axes = create_ploting_axes(M)
+    #build x, y axis; y being the eigenspectrum and x it's enumeration
+    ploting_axes = _create_ploting_axes(M) # 
 
     #compute linear fit 
-    params = FourierAnalysis.intercept_and_exponent_from_log_psd(ploting_axes[1],eig_vals)
+    params = compute_linear_fit_params(ploting_axes[2])
     
-    full_file_path = create_eigenspectrum_plot_file_path(dir_to_save,beta)
+    full_file_path = _create_eigenspectrum_plot_file_path(dir_to_save,beta)
     
     #persist graph if doesn't exist
     if !isfile(full_file_path)
@@ -207,6 +217,8 @@ function plot_beta_beta_fit(file_path::String)
         plt = plot(beta_array,beta_fit_array, seriestype=:scatter,legend=false,alpha=0.2)
         #linear fit
         plot!(u -> u, minimum(beta_array), maximum(beta_array),lc=:black)
+        
+        title!("beta vs beta_fit, beta from $(beta_array[1])to $(beta_array[end])")
 
         #file saving
         savefig(plt, beta_beta_fit_plot_file_path)
