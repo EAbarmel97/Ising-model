@@ -40,8 +40,8 @@ end
 
 returns an array of dim 2 whose elements are arrays of float64. Respectively they are the x-axis and y-exis to by ploted latter on
 """
-function _create_ploting_axes(M::Matrix{Float64})::Array{Array{Float64,1},1}
-    axes = (collect(Float64,1:length(compute_eigvals(0.001,M))), compute_eigvals(0.001,M;drop_first=true))
+function _create_ploting_axes(eigvals::Array{Float64})::Array{Array{Float64,1},1}
+    axes = (collect(Float64,1:length(eigvals)),eigvals)
     return collect(axes)
 end
 
@@ -59,26 +59,24 @@ function _create_beta_beta_fit_file()
     if !isfile(BETA_BETA_FIT_FILE_PATH)
         touch(BETA_BETA_FIT_FILE_PATH) 
         #writes headers to file one it is created
-        open(BETA_BETA_FIT_FILE_PATH,"w+") do io
+        open(BETA_BETA_FIT_FILE_PATH,"a+") do io
             write(io,"beta,beta_fit\n")
         end    
     end
 end
 
 
-function _write_beta_to_file(full_file_path::String,beta::Float64,beta_fit::Float64;is_eof=true::Bool)
+function _write_beta_beta_fit_to_file(full_file_path::String,beta::Float64,beta_fit::Float64;is_eof=true::Bool)
     value_to_write = "$(beta),$(beta_fit)"
-    if !isfile(full_file_path)
-        if is_eof
-            open(full_file_path,"w+") do io
-                write(io, value_to_write)
-            end 
-        else
-            open(full_file_path,"w+") do io
-                write(io,value_to_write * "\n")
-            end    
-        end      
-    end    
+    if is_eof
+        open(full_file_path,"a+") do io
+            write(io, value_to_write)
+        end 
+    else
+        open(full_file_path,"a+") do io
+            write(io,value_to_write * "\n")
+        end    
+    end      
 end
 
 
@@ -107,7 +105,8 @@ function write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas:
 
         params = compute_linear_fit_params(eigvals)
 
-        _write_beta_to_file(BETA_BETA_FIT_FILE_PATH,beta,params[2];is_eof) 
+        _write_beta_beta_fit_to_file(BETA_BETA_FIT_FILE_PATH,beta,-params[2];is_eof=is_eof)
+
     end
 end
 
@@ -177,9 +176,9 @@ end
 
 Persist a pdf file with the plot_eigen_spectrum of the matrix M     
 """
-function plot_eigen_spectrum(dir_to_save::String, M::Matrix{Float64},beta::Float64)
+function _plot_eigen_spectrum(dir_to_save::String, eigvals::Array{Float64,1},beta::Float64)
     #build x, y axis; y being the eigenspectrum and x it's enumeration
-    ploting_axes = _create_ploting_axes(M) # 
+    ploting_axes = _create_ploting_axes(eigvals)
 
     #compute linear fit 
     params = compute_linear_fit_params(ploting_axes[2])
@@ -202,6 +201,12 @@ function plot_eigen_spectrum(dir_to_save::String, M::Matrix{Float64},beta::Float
     end
 end
 
+function plot_eigen_spectrum(dir_to_save::String,M::Matrix{Float64},beta::Float64)
+    eigvals = compute_eigvals(0.001,M)
+    _plot_eigen_spectrum(dir_to_save,eigvals,beta)
+end
+
+
 """
    plot_beta_beta_fit(file_path::String)
 
@@ -214,11 +219,11 @@ function plot_beta_beta_fit(file_path::String)
 
     if !isfile(beta_beta_fit_plot_file_path)
         #plot styling
-        plt = plot(beta_array,beta_fit_array, seriestype=:scatter,legend=false,alpha=0.2)
+        plt = plot(beta_array,beta_fit_array, seriestype=:scatter,alpha=0.2)
         #linear fit
         plot!(u -> u, minimum(beta_array), maximum(beta_array),lc=:black)
         
-        title!("beta vs beta_fit, beta from $(beta_array[1])to $(beta_array[end])")
+        title!("beta vs beta_fit, beta from $(beta_array[1]) to $(beta_array[end])")
 
         #file saving
         savefig(plt, beta_beta_fit_plot_file_path)
