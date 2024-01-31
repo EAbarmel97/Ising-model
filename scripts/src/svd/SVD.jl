@@ -213,15 +213,17 @@ end
 Persists a graph of the beta vs beta fit is a given dir
 """
 function plot_beta_beta_fit(file_path::String)
+
     beta_array, beta_fit_array = read_beta_beta_fit(file_path)
-    
+ 
     beta_beta_fit_plot_file_path = joinpath(AUTOMATED_EIGEN_SEPCTRUM_GRAPHS_DIR,"beta_vs_beta_fit.pdf")
 
     if !isfile(beta_beta_fit_plot_file_path)
         #plot styling
-        plt = plot(beta_array,beta_fit_array, seriestype=:scatter,alpha=0.2)
+        x = collect(1:length(beta_array))
+        plt = plot(x,[beta_array, beta_fit_array],label=["beta" "beta_fit"], seriestype=:scatter,alpha=0.5)
         #linear fit
-        plot!(u -> u, minimum(beta_array), maximum(beta_array),lc=:black)
+        plot!(u -> u, minimum(x), maximum(x),label="id",lc=:black)
         
         title!("beta vs beta_fit, beta from $(beta_array[1]) to $(beta_array[end])")
 
