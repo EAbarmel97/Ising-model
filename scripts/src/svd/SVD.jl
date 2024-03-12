@@ -66,7 +66,7 @@ function _create_beta_beta_fit_file()
 end
 
 
-function _write_beta_beta_fit_to_file(full_file_path::String,beta::Float64,beta_fit::Float64;is_eof=true::Bool)
+function _write_beta_beta_fit_to_file(full_file_path::String,beta::Float64,beta_fit::Float64;is_eof::Bool=true)
     value_to_write = "$(beta),$(beta_fit)"
     if is_eof
         open(full_file_path,"a+") do io
@@ -87,8 +87,7 @@ end
 Writes over a .txt file the values of the several beta vs beta fit values. Th graphs of each individual beta fit can be persisted if wanted using the argument 
 save_individual_plot. It's default value is false.
 """
-function write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas::Int; 
-                              number_of_realizations=10::Int,number_of_observations=1000::Int,save_individual_plot=false::Bool,)
+function write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas::Int; number_of_realizations=10::Int,number_of_observations=1000::Int,save_individual_plot=false::Bool)
     _create_beta_beta_fit_file()
     #= TO OPTIMIZE USING multi-threads =#
     Threads.@threads for beta in LinRange(from_beta, to_beta, num_of_betas)  
