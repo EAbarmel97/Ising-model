@@ -3,3 +3,4 @@
 .julenv
 all_simulations/automated/*
 .vscode
+.env
