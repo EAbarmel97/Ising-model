@@ -1,6 +1,6 @@
 **/src/Manifest.toml 
 **/src/Project.toml
 .julenv
-all_simulations/automated/*
+all_simulations/automated/automated/*
 .vscode
 .env
