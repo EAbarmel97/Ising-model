@@ -2,7 +2,7 @@
 path config definitions
 """
 #= simulations =#
-const SIMULS_DIR = "/home/enki/Documents/THESIS/MSP_THESIS_CODES/all_simulations"
+const SIMULS_DIR = "all_simulations"
 const AUTOMATED_SIMULS_DIR = joinpath(SIMULS_DIR, "automated")
 
 #= graphs dir and sub_dirs =#
