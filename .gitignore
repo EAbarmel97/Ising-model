@@ -1,5 +1,5 @@
 **/src/Manifest.toml 
 **/src/Project.toml
 .julenv
-all_simulations/*
+all_simulations/automated/*
 .vscode
