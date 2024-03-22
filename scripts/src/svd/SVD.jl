@@ -19,6 +19,25 @@ export create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta
 const BETA_BETA_FIT_FILE_PATH  = "beta_beta_fit.txt"
 
 """
+
+"""
+function average_eigen_sprectum(beta::Float64; number_of_realizations=100::Int,number_of_observations=1000::Int,num_samples::Int64)
+    eigen_spectrum_length = compute_eigenspectrum_length(beta; number_of_realizations=number_of_realizations,number_of_observations=number_of_observations)   
+    average_eigen_spec = zeros(eigen_spectrum_length)
+    
+    @Threads.tread for i in 1:num_samples
+        M = create_ts_matrix(beta; number_of_realizations=number_of_realizations, number_of_observations=number_of_observations)
+        M_centered = centralize_matrix(M)
+        eigvals = compute_eigvals(0.001,M_centered)
+        for i in eachindex(average_eigen_spec)
+            average_eigen_sprectum[i] += eigvals[i]
+        end    
+    end
+    
+    return average_eig_spec * 1/num_samples
+end
+
+"""
     create_ts_matrix(beta::Float64, number_of_observations=10::Int)::Matrix{Float64}
 
 Returns Float64 a matrix by stacking a given number of observations and a linear correlation exponent
@@ -168,6 +187,11 @@ function compute_eigenvals_from_beta_generated_noise(beta::Float64; number_of_re
     eigvals = compute_eigvals(0.001,M)
 
     return eigvals
+end
+
+function compute_eigenspectrum_length(beta::Float64; number_of_realizations=10::Int,number_of_observations=1000::Int)
+    eigvals = compute_eigenvals_from_beta_generated_noise(beta; number_of_realizations=number_of_realizations,number_of_observations=number_of_observations)
+    return length(eigvals)
 end
 
 """
