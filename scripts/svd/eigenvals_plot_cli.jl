@@ -6,15 +6,10 @@ include("../src/utils/paths.jl")
 function write_beta_beta_fit_cli(ARGS)
     arg1 = Base.parse(Int64,ARGS[1])
     arg2 = Base.parse(Int64,ARGS[2])
-    write_beta_beta_fit(0.0,3.0,2;number_of_observations=arg1,number_of_realizations=arg2)
-end
-
-function plot_average_eigenspec_cli(ARGS)
-    arg1 = Base.parse(Int64,ARGS[1])
-    arg2 = Base.parse(Int64,ARGS[2])
-    println(average_eigen_spectrum(2.0,number_of_observations=arg1,number_of_realizations=arg2, num_samples=10))
+    arg3= Base.parse(Int64,ARGS[3])
+    arg4= Base.parse(Int64,ARGS[3])
+    write_beta_beta_fit(0.0,3.0,arg3;number_of_observations=arg1,number_of_realizations=arg2,num_samples=arg4)
 end
 
 write_beta_beta_fit_cli(ARGS)
-plot_average_eigenspec_cli(ARGS)
 plot_beta_beta_fit(read_beta_beta_fit, "beta_beta_fit.txt")
