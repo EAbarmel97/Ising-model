@@ -14,9 +14,46 @@ include("../utils/paths.jl")
 include("../fourier/FourierAnalysis.jl")
 using .FourierAnalysis: intercept_and_exponent_from_log_psd
 
-export create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta_fit, plot_beta_beta_fit 
+export create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta_fit, read_beta_beta_fit, plot_beta_beta_fit, average_eigen_spectrum
 
 const BETA_BETA_FIT_FILE_PATH  = "beta_beta_fit.txt"
+
+
+function pad_vector(array::Vector{T}, co_dim::Int64)::Vector{T} where {T <: Real}
+    return vcat(array,zeros(T,co_dim))
+end
+
+function _fill_matrix_with_eigspectrum(eigen_spectra::Vector{Vector{T}}, max_rank::Int64)::Matrix{T} where {T <: Real}
+    eigen_spectra_matrix = zeros(T, length(eigen_spectra), max_rank)
+    
+    for i in eachindex(eigen_spectra)
+        eigen_spectra_matrix[i,:] .= pad_vector(eigen_spectra[i], max_rank - length(eigen_spectra[i]))
+    end
+    return eigen_spectra_matrix
+end
+
+"""
+   average_eigen_spectrum(beta::Float64; number_of_realizations=100::Int,number_of_observations=1000::Int, num_samples=100::Int64)::Vector{Float64}
+
+Gives the mean eigenspectrum averaged over a given number (num_samples) of eigen spectra of a matrix containing stacked realizations (number_of_realizations) 
+of beta correlated time series with a fixed length (number_of_observations)
+"""
+function average_eigen_spectrum(beta::Float64; number_of_realizations=100::Int,number_of_observations=1000::Int,num_samples=100::Int64)
+    eigen_spectra = Vector{Float64}[]
+    ranks = Int64[]
+
+    Threads.@threads for i in 1:num_samples
+       eigen_spectrum = compute_eigenvals_from_beta_generated_noise(beta; number_of_realizations=number_of_realizations,number_of_observations=number_of_observations)
+       push!(eigen_spectra, eigen_spectrum)
+       push!(ranks, length(eigen_spectra[i]))
+    end
+
+    max_rank = maximum(ranks)
+    eigen_spectra_matrix = _fill_matrix_with_eigspectrum(eigen_spectra, max_rank)
+    cols = eachcol(eigen_spectra_matrix)
+    
+    return mean.(cols)
+end
 
 """
 
@@ -57,10 +94,15 @@ end
 """
    create_ploting_axes(M::Matrix{Float64})::Array{Array{Float64,1},1}
 
-returns an array of dim 2 whose elements are arrays of float64. Respectively they are the x-axis and y-exis to by ploted latter on
+Returns an array of dim 2 whose elements are arrays of float64. Respectively they are the x-axis and y-exis to by ploted latter on
 """
 function _create_ploting_axes(eigvals::Array{Float64})::Array{Array{Float64,1},1}
     axes = (collect(Float64,1:length(eigvals)),eigvals)
+    return collect(axes)
+end
+
+function _create_ploting_axes(betas::Array{Float64}, fitted_betas::Array{Float64,1})::Array{Array{Float64,1},1}
+    axes = (betas,fitted_betas)
     return collect(axes)
 end
 
@@ -100,31 +142,25 @@ end
 
 
 """
-    write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas::Int; 
-    save_individual_plot=false::Bool)
+    write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas::Int)
 
 Writes over a .txt file the values of the several beta vs beta fit values. Th graphs of each individual beta fit can be persisted if wanted using the argument 
 save_individual_plot. It's default value is false.
 """
-function write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas::Int; number_of_realizations=10::Int,number_of_observations=1000::Int,save_individual_plot=false::Bool)
+function write_beta_beta_fit(from_beta::Float64, to_beta::Float64, num_of_betas::Int; number_of_realizations=10::Int, number_of_observations=1000::Int, num_samples=10::Int64)
     _create_beta_beta_fit_file()
     #= TO OPTIMIZE USING multi-threads =#
     Threads.@threads for beta in LinRange(from_beta, to_beta, num_of_betas)  
         is_eof = beta == to_beta #line will no be written to file if eof
         
-        eigvals = compute_eigenvals_from_beta_generated_noise(beta;
+        average_eigvals = average_eigen_spectrum(beta; 
                             number_of_realizations=number_of_realizations,
-                            number_of_observations=number_of_observations)
-       
-        if save_individual_plot
-            file_path = create_eigenspectrum_plot_file_path(dir_to_save,beta)
-            plot_eigen_spectrum(file_path,M,beta)
-        end
+                            number_of_observations=number_of_observations,
+                            num_samples=num_samples)                    
 
-        params = compute_linear_fit_params(eigvals)
+        params = compute_linear_fit_params(average_eigvals)
 
         _write_beta_beta_fit_to_file(BETA_BETA_FIT_FILE_PATH,beta,-params[2];is_eof=is_eof)
-
     end
 end
 
@@ -168,28 +204,28 @@ end
 
 Returns an array of singular valuesfiltered by absulte tolerance
 """
-function filter_singular_vals_array(atol::Float64,M::Matrix{Float64})
+function filter_singular_vals_array(M::Matrix{Float64};atol=eps(Float64)::Float64)
     prop_vals = svd(M).S  
     return filter(u -> u > atol, prop_vals)
 end
 
-function compute_eigvals(atol::Float64,M::Matrix{Float64}; drop_first=true::Bool)::Array{Float64,1}
+function compute_eigvals(M::Matrix{Float64}; drop_first=true::Bool)::Array{Float64,1}
     if drop_first 
-        return abs2.(filter_singular_vals_array(atol,M))[2:end]
+        return abs2.(filter_singular_vals_array(M))[2:end]
     end
     
-    return abs2.(filter_singular_vals_array(atol,M))
+    return abs2.(filter_singular_vals_array(M))
 end
 
 function compute_eigenvals_from_beta_generated_noise(beta::Float64; number_of_realizations=10::Int,number_of_observations=1000::Int)::Array{Float64,1}
-    ts_matrix = create_ts_matrix(beta;number_of_realizations=number_of_realizations,number_of_observations=number_of_realizations)
-    M = SVD.centralize_matrix(ts_matrix)
-    eigvals = compute_eigvals(0.001,M)
+    ts_matrix = create_ts_matrix(beta;number_of_realizations=number_of_realizations,number_of_observations=number_of_observations)
+    M = centralize_matrix(ts_matrix)
+    eigvals = compute_eigvals(M)
 
     return eigvals
 end
 
-function compute_eigenspectrum_length(beta::Float64; number_of_realizations=10::Int,number_of_observations=1000::Int)
+function compute_eigenspectrum_length(beta::Float64; number_of_realizations=10::Int,number_of_observations=1000::Int)::Int64
     eigvals = compute_eigenvals_from_beta_generated_noise(beta; number_of_realizations=number_of_realizations,number_of_observations=number_of_observations)
     return length(eigvals)
 end
@@ -225,7 +261,7 @@ function _plot_eigen_spectrum(dir_to_save::String, eigvals::Array{Float64,1},bet
 end
 
 function plot_eigen_spectrum(dir_to_save::String,M::Matrix{Float64},beta::Float64)
-    eigvals = compute_eigvals(0.001,M)
+    eigvals = compute_eigvals(M)
     _plot_eigen_spectrum(dir_to_save,eigvals,beta)
 end
 
@@ -238,7 +274,7 @@ Persists a graph of the beta vs beta fit is a given dir
 function plot_beta_beta_fit(file_path::String)
 
     beta_array, beta_fit_array = read_beta_beta_fit(file_path)
- 
+    
     beta_beta_fit_plot_file_path = joinpath(AUTOMATED_EIGEN_SEPCTRUM_GRAPHS_DIR,"beta_vs_beta_fit.pdf")
 
     if !isfile(beta_beta_fit_plot_file_path)
@@ -254,6 +290,30 @@ function plot_beta_beta_fit(file_path::String)
         savefig(plt, beta_beta_fit_plot_file_path)
     end
 end
+
+"""
+   plot_beta_beta_fit(file_path::String)
+
+Persists a graph of the beta vs beta fit is a given dir
+"""
+function plot_beta_beta_fit(func::Function, file_path::String)
+    axes = _create_ploting_axes(func(file_path)...)
+
+    beta_beta_fit_plot_file_path = joinpath(AUTOMATED_EIGEN_SEPCTRUM_GRAPHS_DIR,"beta_vs_beta_fit.pdf")
+
+    if !isfile(beta_beta_fit_plot_file_path)
+        #plot styling
+        plt = plot(axes[1],axes[2],label=["beta" "beta_fit"], seriestype=:scatter,alpha=0.5)
+        #linear fit
+        plot!(u -> u,label="id",lc=:black)
+        
+        title!("beta vs beta_fit, beta from $(axes[1][1]) to $(axes[1][end])")
+
+        #file saving
+        savefig(plt, beta_beta_fit_plot_file_path)
+    end
+end
+
 end #end of module
 
 
