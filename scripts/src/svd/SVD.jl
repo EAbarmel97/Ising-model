@@ -56,25 +56,6 @@ function average_eigen_spectrum(beta::Float64; number_of_realizations=100::Int,n
 end
 
 """
-
-"""
-function average_eigen_sprectum(beta::Float64; number_of_realizations=100::Int,number_of_observations=1000::Int,num_samples::Int64)
-    eigen_spectrum_length = compute_eigenspectrum_length(beta; number_of_realizations=number_of_realizations,number_of_observations=number_of_observations)   
-    average_eigen_spec = zeros(eigen_spectrum_length)
-    
-    @Threads.tread for i in 1:num_samples
-        M = create_ts_matrix(beta; number_of_realizations=number_of_realizations, number_of_observations=number_of_observations)
-        M_centered = centralize_matrix(M)
-        eigvals = compute_eigvals(0.001,M_centered)
-        for i in eachindex(average_eigen_spec)
-            average_eigen_sprectum[i] += eigvals[i]
-        end    
-    end
-    
-    return average_eig_spec * 1/num_samples
-end
-
-"""
     create_ts_matrix(beta::Float64, number_of_observations=10::Int)::Matrix{Float64}
 
 Returns Float64 a matrix by stacking a given number of observations and a linear correlation exponent
