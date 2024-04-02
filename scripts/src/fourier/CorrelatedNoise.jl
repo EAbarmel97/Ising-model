@@ -37,22 +37,4 @@ function correlated_noise_generator(N::Int64, A::Float64, beta::Float64)::Array{
     return real(ifft(z_array))
 end
 
-function corr_noise_gen(N::Int64, A::Float64, beta::Float64)::Array{Float64,1}
-    psd = Float64[]
-    frequencies = Float64[]
-    freq = 0
-    for i in 1:N
-        freq += 1/N
-        push!(frequencies,freq)
-        psd_at_freq = A*freq^(-beta)
-        push!(psd,psd_at_freq)
-    end
-   
-    norm_array = sqrt.(psd) 
-    phase_arr = 2*pi*rand(N) 
-    z_array = norm_array .* imexp(phase_arr) #correlated noise
-
-    return real(ifft(z_array))
-end
-
 end #end of module

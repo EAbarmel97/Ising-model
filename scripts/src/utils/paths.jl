@@ -1,8 +1,11 @@
 """
 path config definitions
 """
+
 #= simulations =#
-const SIMULS_DIR = "all_simulations"
+const REPO_DIR = abspath(joinpath(@__DIR__,"..", "..", ".."))
+
+const SIMULS_DIR = joinpath(REPO_DIR,"all_simulations")
 const AUTOMATED_SIMULS_DIR = joinpath(SIMULS_DIR, "automated")
 
 #= graphs dir and sub_dirs =#
