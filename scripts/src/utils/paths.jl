@@ -9,7 +9,7 @@ const SIMULS_DIR = joinpath(REPO_DIR,"all_simulations")
 const AUTOMATED_SIMULS_DIR = joinpath(SIMULS_DIR, "automated")
 
 #= graphs dir and sub_dirs =#
-const GRAPHS_DIR = "graphs"
+const GRAPHS_DIR = joinpath(REPO_DIR,"graphs")
 const GRAPHS_DIR_SIMULS = joinpath(GRAPHS_DIR,"simuls")
 const PSD_GRAPHS = joinpath(GRAPHS_DIR,"psd")
 const PSD_GRAPHS_SIMULS = joinpath(PSD_GRAPHS,"simuls")
