@@ -7,17 +7,16 @@ using Plots
 using LaTeXStrings
 
 include("../fourier/CorrelatedNoise.jl")
-using .CorrelatedNoise: correlated_noise_generator, corr_noise_gen
+using .CorrelatedNoise: correlated_noise_generator
 
 include("../utils/paths.jl")
 
 include("../fourier/FourierAnalysis.jl")
 using .FourierAnalysis: intercept_and_exponent_from_log_psd
 
-export create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta_fit, read_beta_beta_fit, plot_beta_beta_fit, average_eigen_spectrum
+export create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta_fit, read_beta_beta_fit, plot_beta_beta_fit, average_eigen_spectrum, BETA_BETA_FIT_FILE_PATH
 
-const BETA_BETA_FIT_FILE_PATH  = "beta_beta_fit.txt"
-
+const BETA_BETA_FIT_FILE_PATH  = joinpath(REPO_DIR, "beta_beta_fit.txt")
 
 function pad_vector(array::Vector{T}, co_dim::Int64)::Vector{T} where {T <: Real}
     return vcat(array,zeros(T,co_dim))
@@ -277,7 +276,7 @@ end
 
 Persists a graph of the beta vs beta fit is a given dir
 """
-function plot_beta_beta_fit(func::Function, file_path::String)
+function plot_beta_beta_fit(func::Function; file_path::String=BETA_BETA_FIT_FILE_PATH)
     axes = _create_ploting_axes(func(file_path)...)
 
     beta_beta_fit_plot_file_path = joinpath(AUTOMATED_EIGEN_SEPCTRUM_GRAPHS_DIR,"beta_vs_beta_fit.pdf")
