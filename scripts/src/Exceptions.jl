@@ -1,27 +1,20 @@
 module Exceptions
 export IlegalChoiceException, PlottingException, NotIntegerException
-#= Exception to be throwned if user makes a bad election  =#
-mutable struct IlegalChoiceException <: Exception
+
+struct IlegalChoiceException <: Exception
     msg::String
 end
 
-#showerror function override
-Base.showerror(io :: IO, e :: IlegalChoiceException) = print(io, "$(e.msg)")
-
-#= Custom exception to be prompted to the user =#
-mutable struct PlottingException <: Exception
+struct PlottingException <: Exception
+    msg::String
+end
+ 
+struct NotIntegerException <: Exception
     msg::String
 end
 
-#showerror function override 
-Base.showerror(io :: IO, e :: PlottingException) = print(io, "$(e.msg)")
-
-#= Exception to be raised if somthing's not an integer=#
-mutable struct NotIntegerException <: Exception
-    msg :: String
+function Base.showerror(io::IO, e::T) where {T <: Exception}
+    print(io, "$(e.msg)")
 end
-
-#showerror function override 
-Base.showerror(io :: IO, e :: NotIntegerException) = print(io, "$(e.msg)")
 
 end #end of module

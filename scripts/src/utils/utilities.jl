@@ -396,36 +396,4 @@ function psd_graph_file_path(destination_dir::String,A::Float64,beta::Float64)::
 
     return full_file_path
 end
-
-#= Correlated Noise auxiliary functions =#
-
-"""
-    determines_noise_or_movement(beta1::Float64)::String
-
-returns a string corresponding to the classification of the simulated correlated noise or movement depending on the 
-values of the beta1 linear fit parameter 
-"""
-function determines_noise_or_movement(beta1::Float64)::String
-    if beta1 == 0.0
-        description = "white noise"
-    end
-    
-    if 0.0 < beta1 < 1.0
-        description = "fractal noise with beta = $beta1"
-    end     
-    
-    if beta1 == 1.0
-        description = "pink noise"
-    end
-
-    if 1.0 < beta1 < 2.0
-        description = "fractal brownian motion with beta = $beta1"
-    end   
-
-    if beta1 == 2.0
-        description = "brownian motion"
-    end
-    
-    return description
-end
 end #end of module

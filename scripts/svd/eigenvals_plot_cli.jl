@@ -1,5 +1,6 @@
 include("../src/svd/SVD.jl")
-using .SVD: create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta_fit, read_beta_beta_fit, plot_beta_beta_fit, average_eigen_spectrum
+using .SVD: create_ts_matrix, centralize_matrix, plot_eigen_spectrum, write_beta_beta_fit, plot_beta_beta_fit, average_eigen_spectrum
+using .SVD: BETA_BETA_FIT_FILE_PATH
 
 include("../src/utils/paths.jl")
 
@@ -12,4 +13,4 @@ function write_beta_beta_fit_cli(ARGS)
 end
 
 write_beta_beta_fit_cli(ARGS)
-plot_beta_beta_fit(read_beta_beta_fit, "beta_beta_fit.txt")
+plot_beta_beta_fit(SVD.BETA_BETA_FIT_FILE_PATH)
