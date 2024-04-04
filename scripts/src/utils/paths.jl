@@ -2,9 +2,9 @@
 path config definitions
 """
 
-#= simulations =#
 const REPO_DIR = abspath(joinpath(@__DIR__,"..", "..", ".."))
 
+#= simulations =#
 const SIMULS_DIR = joinpath(REPO_DIR,"all_simulations")
 const AUTOMATED_SIMULS_DIR = joinpath(SIMULS_DIR, "automated")
 
@@ -27,4 +27,3 @@ const CORRELATED_NOISE_DIR = joinpath(AUTOMATED_GRAPHS_DIR,"correlated_noise")
 
 #= eigen spectrum =#
 const AUTOMATED_EIGEN_SEPCTRUM_GRAPHS_DIR = joinpath(AUTOMATED_GRAPHS_DIR, "svd")
-

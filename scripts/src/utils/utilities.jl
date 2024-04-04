@@ -138,7 +138,7 @@ function get_sorted_temperatures(filtered_array)
 end
 
 #= Function to get the arithmetic mean value of a given time series=#
-function mean_value(file_path::AbstractString, prune_first_N=0::Int):: Float64
+function mean(file_path::String)::T where {T <: AbstractFloat}
     sum = 0
     time_series = get_array_from_txt(file_path,prune_first_N)
     for i in eachindex(time_series)
@@ -217,68 +217,12 @@ function use_temperature_array() :: Bool
     end
 end
 
-function get_ARGS()::Array{Union{Int64,Float64},1}
-    ARGS = Union{Int64,Float64}[]
-    
-    println("Provide initial and final temperatures. Ti < Tf")
-    
-    println()
-     
-    println("Initial temperature:")
-    init_temp = parse_int_float64(Float64, readline())
-    
-    println()
-    
-    println("Final temperature:")
-    final_temp = parse_int_float64(Float64, readline())
-    
-    append_2_element_array_or_throw([init_temp,final_temp],ARGS)
-
-    println()
-
-    println("Number of runs:")
-    num_runs = parse_int_float64(Int, readline())
-    push!(ARGS,num_runs)
-
-    println()
-     
-    println("Increment: ")
-    increment = parse_int_float64(Float64, readline())
-    push!(ARGS,increment)
-
-    println("Grid size")
-    n_grid = parse_int_float64(Int, readline())
-    push!(ARGS,n_grid)
-
-    println()
-     
-    println("Number of generations:")
-    num_generations = parse_int_float64(Int, readline())
-    push!(ARGS,num_generations)
-
-    return ARGS
-end
-
-#= IO handling auxiliary functions =#
-function create_automated_simulations_dir_if_not_exists()
-    if !isdir(AUTOMATED_SIMULS_DIR)
-        mkpath(AUTOMATED_SIMULS_DIR)
+function _create_dir_if_not_exists(dir::String)
+    if !isdir(dir)
+        mkpath(dir)
     end
 end
 
-function create_simulations_dir_if_not_exists()
-    if !isdir(SIMULS_DIR)
-        mkpath(SIMULS_DIR)
-    end
-end
-
-function create_simulations_dirs_if_not_exit(is_automated::Bool)
-    if is_automated
-        create_automated_simulations_dir_if_not_exists()
-    else
-        create_simulations_dir_if_not_exists()
-    end
-end
 
 function create_simulation_sub_dir(temp::Float64,is_automated::Bool)::String
     ROUNDED_TEMP = round(temp, digits=2)
@@ -289,17 +233,6 @@ function create_simulation_sub_dir(temp::Float64,is_automated::Bool)::String
     return simulations_dir
 end
 
-function create_graphs_dir_if_not_exits()
-    if !isdir(GRAPHS_DIR_SIMULS)
-        mkpath(GRAPHS_DIR_SIMULS)
-    end
-end
-
-function create_automated_graphs_dir_if_not_exists()
-    if !isdir(AUTOMATED_GRAPHS_DIR_SIMULS)
-        mkpath(AUTOMATED_GRAPHS_DIR_SIMULS)
-    end
-end
 
 # Function 1: Create Graphs Directories
 function create_graphs_directories(simuls_dir::String)

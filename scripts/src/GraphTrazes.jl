@@ -15,37 +15,57 @@ include("utils/utilities.jl")
 using .utilities: get_array_from_txt, mean_value, median_value, neglect_N_first_from_array!,parse_int_float64,create_graphs_directories,filter_directory_names
 using .utilities: count_runs_in_dir
 
+include("FileHandlers.jl")
+using .FileHandlers: FileHandler, create_handler
+
 include("utils/paths.jl")
+
+abstract type TimeSeries end
+
+mutable struct MagnetizationTimeSeries{T <: AbstractFloat} <: TimeSeries
+    data::T[]
+    run::Int64
+end
+
+mutable struct CorrNoiseTimeSeries{T <: AbstractFloat} <: TimeSeries
+    beta0::T
+    beta1::T
+    data::T[]
+end
 
 #= Function to save the traces of the time series contained in .txt files =#
 function save_traze(dir_to_save::String, file_path::String)
-    mean = utilities.mean_value(file_path)
-    time_series = utilities.get_array_from_txt(file_path)
-
+    text_hanler= FileHandlers.create_handler(file_path).handler
+    
+    time_series = FileHandlers.read_data(Float64,text_hanler)
+    
     x = collect(0:(length(time_series)-1))
     y = time_series
     
     plt = plot(x, y, label= L"M_n") #plot reference 
-    hline!(plt, [mean, mean], label=L"\overline{M}_n",linewidth=3)
+    hline!(plt, [mean(time_series), mean(time_series)], label=L"\overline{M}_n",linewidth=3)
     ylims!(-1.0, 1.0)
     xlims!(0, length(time_series))
     xlabel!(L"n")
     ylabel!(L"M_n")
-    savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
+    
+    pdf_handler = FileHandlers.create_handler(dir_to_save).hanlder
+    FileHandlers.save_file(plt,pdf_handler)
 end
 
-function save_traze(dir_to_save::String, time_series::Array{Float64,1}, beta0::Float64,beta1::Float64)
-    avg = mean(time_series)
-    x = collect(0:(length(time_series)-1))
+function save_traze(dir_to_save::String, corr_noise_ts::CorrNoiseTimeSeries)
+    avg = mean(corr_noise_ts.data)
+    x = collect(0:(length(corr_noise_ts.data)-1))
     
-    plt = plot(x,time_series, label= L"X_n") #plot reference 
-    title!("beta0 = $beta0, beta1 = $beta1")
+    plt = plot(x,corr_noise_ts.data, label= L"X_n") #plot reference 
+    title!("beta0 = $(corr_noise_ts.beta0), beta1 = $(corr_noise_ts.beta1)")
     hline!(plt, [avg, avg], label=L"\overline{M}_n",linewidth=3)
-    #ylims!(-1.0, 1.0)
-    xlims!(0, length(time_series))
+    xlims!(0, length(corr_noise_ts.data))
     xlabel!(L"n")
     ylabel!(L"X_n")
-    savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory  
+
+    pdf_handler = FileHandlers.create_handler(dir_to_save).hanlder
+    FileHandlers.save_file(plt,pdf_handler)
 end
 
 """
@@ -86,16 +106,14 @@ end
 
 Adds to a dict storing temp-stringified median magnetization
 """
-function add_temperature_median_magn_to_dict!(aux_dir_name::String,temperatures_median_magn::Dict{Float64,String},simuls_dir::String)::Nothing
+function add_temperature_median_magn_to_dict!(aux_dir_name::String,temperatures_median_magn::Dict{Float64,String},simuls_dir::String)
     num_runs = count_runs_in_dir(simuls_dir,aux_dir_name)
     aux_temp = replace(aux_dir_name, "simulations_T_" => "", "_" => ".")
-    temp = utilities.parse_int_float64(Float64, aux_temp)
+    temp = parse(Float64, aux_temp)
     
     temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization")
     median_per_temp = calculate_median_magnetization(temp_abs_dir, num_runs)
     temperatures_median_magn[temp] = "$median_per_temp"
-
-    return nothing
 end
 
 """
@@ -104,7 +122,7 @@ end
 Depending on whether simulations are generated interactively or not, the headers of the file 
 are written over such file containing the custom csv (as a .txt) 
 """
-function write_header(file_name::String,simuls_dir::String)::Nothing
+function write_header(file_name::String,simuls_dir::String)
     open(file_name,"w+") do io
         if contains(simuls_dir,"automated")
             write(io,"temp,median_magn_automated\n") 
@@ -112,8 +130,6 @@ function write_header(file_name::String,simuls_dir::String)::Nothing
             write(io,"temp,median_magn\n") 
         end 
     end
-    
-    return nothing
 end
  
 """
