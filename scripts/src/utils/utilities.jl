@@ -137,16 +137,6 @@ function get_sorted_temperatures(filtered_array)
     return sort!(temperatures)
 end
 
-#= Function to get the arithmetic mean value of a given time series=#
-function mean(file_path::String)::T where {T <: AbstractFloat}
-    sum = 0
-    time_series = get_array_from_txt(file_path,prune_first_N)
-    for i in eachindex(time_series)
-        sum += time_series[i]
-    end
-    return sum /= length(time_series)
-end
-
 function median_value(file_path::AbstractString, prune_first_N=0::Int):: Float64
     time_series = get_array_from_txt(file_path,prune_first_N)
     return median(time_series)
@@ -189,13 +179,6 @@ end
 
 function separate_by_dashes(str::String)::String
     return replace(str, "." => "_")
-end
-
-function append_2_element_array_or_throw(arr1::AbstractArray,arr2)
-    if arr1[1] < arr1[2]
-        throw(exceptions.IlegalChoiceException("Ilegal choice. Tf < Ti"))  
-    end
-    append!(arr2,arr1)    
 end
 
 #= Auxiliary functions for user input processing =#
@@ -289,14 +272,7 @@ function create_fourier_dir_if_not_exists(simulations_dir::String)::String
     FOURIER_AUTOMATED_DIR = joinpath(simulations_dir, "fourier")
     mkpath(FOURIER_AUTOMATED_DIR)  
 end
-
-function create_dir_not_exists(dit_to_create::String)::Nothing
-    if !isdir(dir_to_create)
-        mkpath(dir_to_create)
-    end
-    
-    return nothing
-end    
+  
 
 function count_runs_in_dir(simuls_dir::String, aux_dir_name::String)::Int64
     temp_abs_dir = joinpath(simuls_dir,aux_dir_name,"magnetization") #abs path to the simulations at a given temp 

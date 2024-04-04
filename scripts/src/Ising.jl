@@ -12,34 +12,34 @@ const GLAUBER_DYNAMICS = 1
 
 mutable struct isingModel
     #Temperature 
-    TEMP :: Float64
+    TEMP::Float64
 
     #Size of grid 
-    NGRID :: Int
+    NGRID::Int64
 
     #Size of grid's side
-    NCELLS :: Int
+    NCELLS::Int64
 
     #2D array containg the spin states: N²
-    grid :: Array{Int,2}
+    grid::Matrix{Int64}
 
     #Flip order 
-    flip_order :: Array{Int,1}
+    flip_order::Vector{Int64}
 
     #Fliping strategies 
-    flip_strategy :: Int
+    flip_strategy::Int64
     
     #Transition dynamics 
-    trans_dynamics :: Int 
+    trans_dynamics::Int64 
     
     #Current generation (will never reset)
-    cur_gen :: Int 
+    cur_gen::Int64
     
     #Global statistics
-    global_energy :: Float64
-    global_mean :: Float64
-    global_variance :: Float64
-    global_magnetization :: Float64
+    global_energy::Float64
+    global_mean::Float64
+    global_variance::Float64
+    global_magnetization::Float64
 
     #model constructor with two params 
     function isingModel(p_TEMP,p_NGRID)
@@ -47,9 +47,9 @@ mutable struct isingModel
         NGRID = p_NGRID
         NCELLS = NGRID*NGRID
         flip_strategy = RANDOM_STRATEGY
-        flip_order = Array{Int,1}(undef,NCELLS)
+        flip_order = Vector{Int64}(undef,NCELLS)
         trans_dynamics = METROPOLIS_DYNAMICS
-        grid = Array{Int,2}(undef,NGRID,NGRID)
+        grid = Matrix{Int64}(undef,NGRID,NGRID)
         cur_gen = 0 
 
         global_energy = 0.0
@@ -58,8 +58,9 @@ mutable struct isingModel
         global_variance = 0.0
 
         return new(TEMP,NGRID,NCELLS,grid,flip_order,flip_strategy,trans_dynamics,cur_gen, 
-        global_energy, global_magnetization,global_mean, global_variance)
+                   global_energy, global_magnetization,global_mean, global_variance)
     end
     
-end #end of struct 
 end
+
+end #end of module

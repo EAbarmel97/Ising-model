@@ -30,7 +30,7 @@ function read_data(T::Type, text_handler::TextFileHandler)::Vector{T}
                 parsed_value = parse(T, lines[i])
                 push!(arr, parsed_value)
             catch e
-                throw(ArgumentError("$line is not of type $T"))
+                throw(ArgumentError("Impossible to parse from $line a type $T"))
             end
         end
         
@@ -41,22 +41,29 @@ function read_data(T::Type, text_handler::TextFileHandler)::Vector{T}
 end
  
 function parse_data(T::Type, text_handler::TextFileHandler)::Dict{Symbol,Vector{T}}
-    data_frame = Dict{:Symbol,Vector{T}}()
+    data_frame = Dict{Symbol, Vector{T}}()
     io = text_handler.file_path
-    open(io, "r+") do io
-        lines = readlines(io)
-        headers = Symbol.(lines[1])
+    try 
+        open(io, "r") do file
+            lines = readlines(file)
+            headers = Symbol.(split(lines[1], ","))
 
-        for i in 1:lines[2:end]
-            substr_temp_and_mean_magn_arr = split(arr_str[i],",")
-            stringified_temp = string(substr_temp_and_mean_magn_arr[1])
-            stringified_mean_magn = string(substr_temp_and_mean_magn_arr[2])
-            temp = utilities.parse(T,stringified_temp) 
-            median_magn = utilities.parse(Float64,stringified_mean_magn)
-            push!(temps,temp)
-            push!(median_magns, median_magn)
+            for i in eachindex(lines[2:end])
+                fields = split(lines[i], ",")
+                for (header, field) in zip(headers, fields)
+                    try
+                        entry = parse(T, field) 
+                        push!(get!(data_frame, header, Vector{T}()), entry)
+                    catch e
+                        throw(ArgumentError("Unable to parse '$field' as type $T"))
+                    end
+                end 
+            end
         end
-    end    
+        return data_frame
+    catch e
+        throw(SystemError("ERROR: File not found at path $(text_handler.file_path)"))
+    end
 end
 
 struct PDFFileHandler <: AbstractFileHandler
@@ -65,13 +72,11 @@ end
 
 function save_file(plt::Plots.Plot{Plots.GRBackend},pdf_handler::PDFFileHandler)
     if !isfile(pdf_handler.file_path)
-        touch(pdf_handler.file_path)
         savefig(plt, pdf_handler.file_path)
     end
 
-    @error "File $pdf_file already exists! So, not saving"   
+    @error "File $(pdf_handler.file_path) already exists! So, not saving"   
 end
-
 
 
 function create_handler(file_path::String)::FileHandler

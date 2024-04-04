@@ -12,25 +12,25 @@ include("Exceptions.jl")
 using .Exceptions: PlottingException
 
 include("utils/utilities.jl")
-using .utilities: get_array_from_txt, mean_value, median_value, neglect_N_first_from_array!,parse_int_float64,create_graphs_directories,filter_directory_names
+using .utilities: median_value, neglect_N_first_from_array!, create_graphs_directories,filter_directory_names
 using .utilities: count_runs_in_dir
 
 include("FileHandlers.jl")
-using .FileHandlers: FileHandler, create_handler
+using .FileHandlers: FileHandler, create_handler, parse_data
 
 include("utils/paths.jl")
 
 abstract type TimeSeries end
 
 mutable struct MagnetizationTimeSeries{T <: AbstractFloat} <: TimeSeries
-    data::T[]
+    data::Vector{T}
     run::Int64
 end
 
 mutable struct CorrNoiseTimeSeries{T <: AbstractFloat} <: TimeSeries
     beta0::T
     beta1::T
-    data::T[]
+    data::Vector{T}
 end
 
 #= Function to save the traces of the time series contained in .txt files =#
@@ -49,8 +49,8 @@ function save_traze(dir_to_save::String, file_path::String)
     xlabel!(L"n")
     ylabel!(L"M_n")
     
-    pdf_handler = FileHandlers.create_handler(dir_to_save).hanlder
-    FileHandlers.save_file(plt,pdf_handler)
+    pdf_handler = FileHandlers.create_handler(dir_to_save).handler
+    FileHandlers.save_file(plt, pdf_handler)
 end
 
 function save_traze(dir_to_save::String, corr_noise_ts::CorrNoiseTimeSeries)
@@ -64,7 +64,7 @@ function save_traze(dir_to_save::String, corr_noise_ts::CorrNoiseTimeSeries)
     xlabel!(L"n")
     ylabel!(L"X_n")
 
-    pdf_handler = FileHandlers.create_handler(dir_to_save).hanlder
+    pdf_handler = FileHandlers.create_handler(dir_to_save).handler
     FileHandlers.save_file(plt,pdf_handler)
 end
 
@@ -73,12 +73,17 @@ end
 
 Calculate median magnetization
 """
-function calculate_median_magnetization(temp_abs_dir::String, num_runs::Int64)::Float64
+function calculate_median_magnetization(temp_abs_dir::String)::Float64
     magnetization_per_run = Float64[]
     
-    for run in 1:num_runs
-        aux_dir = joinpath(temp_abs_dir, "global_magnetization_r$run.txt")
-        abs_mean_val = abs(utilities.median_value(aux_dir))
+    for run in readdir(temp_abs_dir)
+        file_path = joinpath(temp_abs_dir, "global_magnetization_r$run.txt")
+        text_handler = FileHandlers.create_handler(file_path).handler
+        data = read_data(Float64,text_handler)
+
+        magn_time_series = MagnetizationTimeSeries(data,run)
+        abs_mean_val = abs(median(magn_time_series.data))
+
         push!(magnetization_per_run, abs_mean_val)
     end
     
@@ -177,8 +182,7 @@ function graph_and_write_over_file!(dir_names::AbstractArray, simuls_dir::Abstra
             save_graphs(temp_abs_dir, aux_dir_name, run, at_temp)
         end
     end
-
-    #writes
+    
     write_over_file_from_dict!(filtered_array,file_to_write,temperatures_median_magn)
 end
 
@@ -197,33 +201,19 @@ end
     
 Plot custom csv file containing mean magn at its corresponding temp 
 """
-function plot_median_magn(file_dir::String, dir_to_save::String)
-    temps = Float64[]
-    median_magns = Float64[]
+function plot_median_magn(file_path::String, dir_to_save::String)
+    file_handler = FileHandlers.create_handler(file_path).handler
+    data = FileHandlers.parse_data(Float64,file_handler)
+    axes = collect(values(data))
+    
+    plt = plot(axes[1], axes[2], label = L"\overline{M}_n")
+    ylims!(0.0, 1.0)
+    xlims!(0,3.5)
+    vline!(plt, [Ising.CRITICAL_TEMP, Ising.CRITICAL_TEMP], label=L"T_c", linewidth=1, fillalpha=0.02)
+    xlabel!(L"T")
+    ylabel!("median magnetization")
 
-    # preprocesing custom csv file 
-    open(file_dir, "r+") do io
-        arr_str = readlines(io) 
-        neglect_N_first_from_array!(arr_str,1) #discarting the headers
-        for i in eachindex(arr_str)
-            substr_temp_and_mean_magn_arr = split(arr_str[i],",")
-            stringified_temp = string(substr_temp_and_mean_magn_arr[1])
-            stringified_mean_magn = string(substr_temp_and_mean_magn_arr[2])
-            temp = utilities.parse_int_float64(Float64,stringified_temp) 
-            median_magn = utilities.parse_int_float64(Float64,stringified_mean_magn)
-            push!(temps,temp)
-            push!(median_magns, median_magn)
-        end
-        
-        if isfile(file_dir)
-            plt = plot(temps, median_magns, label = L"\overline{M}_n")
-            ylims!(0.0, 1.0)
-            xlims!(0,3.5)
-            vline!(plt, [Ising.CRITICAL_TEMP, Ising.CRITICAL_TEMP], label=L"T_c", linewidth=1, fillalpha=0.02)
-            xlabel!(L"T")
-            ylabel!("median magnetization")
-            savefig(plt, dir_to_save) #saving plot reference as a file with pdf extension at a given directory 
-        end
-    end    
+    pdf_file = FileHandlers.create_handler(dir_to_save).handler
+    FileHandlers.save_file(plt,pdf_file)
 end
 end #end of modules
